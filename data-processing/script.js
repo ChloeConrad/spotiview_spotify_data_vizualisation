@@ -7,21 +7,22 @@ import * as fs from 'fs';
 
 
 
+
+const DIR = "elliot"
+
+
+
+
+
+
+
+
+
 const CLIENT_ID = "a2793b078c7b46daa1370e663d920581"
 const CLIENT_SECRET = "9414c0dc83a3497e937452a371a82ab1"
 const REDIRECT_URL = "https://ambroise.cloud/"
-const DIR = "elliot"
 const DIR_PATH = "../datasets/raw/"+DIR
 const TRACKS_DIR_PATH = "../datasets/tracks"
-
-
-
-
-
-
-
-
-
 
 
 function sleep(ms) {
