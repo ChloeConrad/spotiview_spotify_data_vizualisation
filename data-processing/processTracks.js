@@ -3,7 +3,7 @@ import { getArtist, getSeveralArtists, getSpotifyAccessToken } from 'spotify-nod
 
 const TRACKS_DIR_PATH = "../datasets/tracks/"
 
-const INSTANCE = "elliot"
+const INSTANCE = "elodie"
 
 const filePath = TRACKS_DIR_PATH + "raw_tracks_"+ INSTANCE +".json"
 

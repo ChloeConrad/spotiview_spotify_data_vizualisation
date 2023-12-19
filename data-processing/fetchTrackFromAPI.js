@@ -8,7 +8,7 @@ import * as fs from 'fs';
 
 
 
-const DIR = "elliot"
+const DIR = "elodie"
 
 
 
@@ -62,9 +62,8 @@ for (const [i, trackIds] of tracksIdsSubLists.entries()) {
     tracks.push.apply(tracks, data.tracks)
   });
   await sleep(1000);
-  break;
 }
 
-console.log(tracks[0])
+//console.log(tracks[0])
 
-//fs.writeFileSync(TRACKS_DIR_PATH+"/raw_tracks_"+DIR+".json", JSON.stringify(tracks))
+fs.writeFileSync(TRACKS_DIR_PATH+"/raw_tracks_"+DIR+".json", JSON.stringify(tracks))
