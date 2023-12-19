@@ -25,33 +25,58 @@
       
       const elliotHistory = await getHistory('./datasets/raw/elliot/Streaming_History_Audio_2019-2020_1.json')
 
-      const groupByDay = d3.groups(elliotHistory, d => d.ts.getDay()+"/"+d.ts.getMonth()+"/"+d.ts.getFullYear())
+      const groupByDay = d3.groups(elliotHistory, (d) => {
+        return new Date(d.ts.toDateString())
+      })
 
       groupByDay.forEach(day => {
         const [i, historyOfDay] = day;
         day.msPlayedTotal = d3.sum(historyOfDay, d => d.ms_played);
       });
 
-      console.log(groupByDay)
+      //console.log(groupByDay)
+
+      //console.log(groupByDay[0].msPlayedTotal)
 
       //console.log(elliotHistory)
+
+      const width = 300
+      const height = 45
 
       const rangeSvg =  d3.select("#rangeDiv")
         .append("svg")
         .attr("id", "rangesvg")
-        .style("width", "100%")
-        .style("height", "100%")
+        .attr("viewBox", [0, 0, width, height])
         .style("background-color", "silver")
-        
-      // https://observablehq.com/@d3/focus-context
-      const brush = d3.brushX()
-                      .extent(([30, 200]))
+
+      rangeSvg.append("rect").attr("x",299).attr("y",0).attr("width",1).attr("height",1)
+
+      const timeScale = d3.scaleTime([d3.min(groupByDay, h => h[0]), d3.max(groupByDay, h => h[0])],[0,width])
+      const timeListenningScale = d3.scaleTime([d3.min(groupByDay, h => h.msPlayedTotal), d3.max(groupByDay, h => h.msPlayedTotal)],[0,height])
+
 
       rangeSvg.append("g")
-              .call(brush) 
+              .selectAll("rect")
+              .data(groupByDay)
+              .enter()
+              .append("rect")
+              .attr("x", (d, i) => timeScale(d[0]) - width * 0.5 / groupByDay.length)
+              .attr("y", (d, i) =>{
+                return height-timeListenningScale(d.msPlayedTotal)
+              })
+              .attr("width", width / groupByDay.length)
+              .attr("height", (d) => timeListenningScale(d.msPlayedTotal))
 
+      
 
+      const bottomAxis = d3.axisBottom(timeScale)
+                           .tickFormat(d3.utcFormat("%b"));
+                           //.ticks(d3.utcMonth.every(1))
 
+      rangeSvg.append("g")
+              .call(bottomAxis)
+              //.attr("transform", "translate(0," + (20)+")")
+              .style("font-size",3);
 
 
 
