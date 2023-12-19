@@ -1,0 +1,75 @@
+<head>
+    <meta charset="utf-8" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+
+<body>
+<script>
+
+    function getGenresDistr(data,seuil) {
+        var dicoGenres = {}
+        for(var i = 0; i<data.length; i++){
+            var genre =  data[i].genres 
+            for(var t = 0 ; t<genre.length; t++){
+                if(genre[t] in dicoGenres) {
+                    dicoGenres[genre[t]] = dicoGenres[genre[t]] + 1;
+                }
+                else {
+                    dicoGenres[genre[t]] = 1;
+                }
+            }
+        }
+        console.log(dicoGenres)
+
+        var valuesArray = Object.values(dicoGenres);
+        valuesArray.sort((a, b) => b - a);
+        var val_seuil = valuesArray[Math.floor(valuesArray.length * seuil)];
+        var filteredDicoGenre = Object.fromEntries(
+            Object.entries(dicoGenres).filter(([key, value]) => value >= val_seuil)
+        );
+
+        return filteredDicoGenre;
+    }
+
+    d3.json("datasets/tracks/albums_elliot.json").then(function (albums_elliot) {
+        filteredData = getGenresDistr(albums_elliot,0.1);
+        console.log(Object.keys(filteredData).length)
+        const w = 2000;
+        const h = 250;
+
+        const yScale = d3.scaleSqrt()
+                .domain([1, d3.max(Object.entries(filteredData), d => +d[1])])
+                .range([0, h]);
+
+        const barWidth = 2
+        const barSpacing = 1
+        console.log(Object.entries(filteredData))
+        const svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h);
+
+        const bars = svg.selectAll("rect")
+                .data(Object.entries(filteredData))
+                .enter()
+                .append("g");
+        bars.append("rect")
+                .attr("x", (d, i) => i * (barWidth + barSpacing))
+                .attr("y", (d, i) => (h -  yScale(d[1]))/2)
+                .attr("width", barWidth)
+                .attr("height", (d, i) => (yScale(d[1])))
+                .attr("fill", (d, i) => i % 2 === 0 ? "#1DB954" : "#000000")  // Hexadecimal values for navy and steelblue
+                .attr("class", "bar");
+        /*bars.append("rect")
+                .attr("x", (d, i) => i * (barWidth + barSpacing))
+                .attr("y", (d, i) => (h -  yScale(d[1]))/2)
+                .attr("width", barWidth)
+                .attr("height", (d, i) => (yScale(d[1])))
+                .attr("fill", (d, i) => i % 2 === 0 ? "#1DB954" : "#000000")  // Hexadecimal values for navy and steelblue
+                .attr("class", "bar");*/
+        
+        
+     })
+</script>
+</body>
