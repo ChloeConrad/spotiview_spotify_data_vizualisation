@@ -3,7 +3,7 @@ import { getArtist, getSeveralArtists, getSpotifyAccessToken } from 'spotify-nod
 
 const TRACKS_DIR_PATH = "../datasets/tracks/"
 
-const INSTANCE = "elodie"
+const INSTANCE = "elliot"
 
 const filePath = TRACKS_DIR_PATH + "raw_tracks_"+ INSTANCE +".json"
 
@@ -53,16 +53,16 @@ const accessToken = await getSpotifyAccessToken(CLIENT_ID, CLIENT_SECRET, REDIRE
 
 const artistiSplits = listSplit(artistList,50)
 
-const albumFetch = []
+const artistFetch = []
 
 console.log("Fetch Albums Data")
 for (let i = 0; i < artistiSplits.length; i++) {
   console.log(i,"/",artistiSplits.length)
   const artistSplit = artistiSplits[i];
-  albumFetch.push.apply(albumFetch, await getSeveralArtists(accessToken, artistSplit.map(x => x.id)).then(res => res.artists.flat(1)))
+  artistFetch.push.apply(artistFetch, await getSeveralArtists(accessToken, artistSplit.map(x => x.id)).then(res => res.artists.flat(1)))
   sleep(500)
 }
 
 fs.writeFileSync(TRACKS_DIR_PATH + "tracks_"+ INSTANCE +".json", JSON.stringify(tracksProcessed))
-fs.writeFileSync(TRACKS_DIR_PATH + "albums_"+ INSTANCE +".json", JSON.stringify(albumFetch))
-fs.writeFileSync(TRACKS_DIR_PATH + "artists_"+ INSTANCE +".json", JSON.stringify(artistList))
+fs.writeFileSync(TRACKS_DIR_PATH + "albums_"+ INSTANCE +".json", JSON.stringify(albumsProcessed))
+fs.writeFileSync(TRACKS_DIR_PATH + "artists_"+ INSTANCE +".json", JSON.stringify(artistFetch))

@@ -34,14 +34,10 @@
         day.msPlayedTotal = d3.sum(historyOfDay, d => d.ms_played);
       });
 
-      //console.log(groupByDay)
-
-      //console.log(groupByDay[0].msPlayedTotal)
-
-      //console.log(elliotHistory)
-
       const width = 300
-      const height = 45
+      const height = 30
+
+      const space = 8
 
       const rangeSvg =  d3.select("#rangeDiv")
         .append("svg")
@@ -52,7 +48,7 @@
       rangeSvg.append("rect").attr("x",299).attr("y",0).attr("width",1).attr("height",1)
 
       const timeScale = d3.scaleTime([d3.min(groupByDay, h => h[0]), d3.max(groupByDay, h => h[0])],[0,width])
-      const timeListenningScale = d3.scaleTime([d3.min(groupByDay, h => h.msPlayedTotal), d3.max(groupByDay, h => h.msPlayedTotal)],[0,height])
+      const timeListenningScale = d3.scaleTime([d3.min(groupByDay, h => h.msPlayedTotal), d3.max(groupByDay, h => h.msPlayedTotal)],[0,height - space])
 
 
       rangeSvg.append("g")
@@ -62,20 +58,35 @@
               .append("rect")
               .attr("x", (d, i) => timeScale(d[0]) - width * 0.5 / groupByDay.length)
               .attr("y", (d, i) =>{
-                return height-timeListenningScale(d.msPlayedTotal)
+                return height-space-timeListenningScale(d.msPlayedTotal)
               })
               .attr("width", width / groupByDay.length)
               .attr("height", (d) => timeListenningScale(d.msPlayedTotal))
 
       
 
-      const bottomAxis = d3.axisBottom(timeScale)
-                           .tickFormat(d3.utcFormat("%b"));
-                           //.ticks(d3.utcMonth.every(1))
+      const bottomAxis =  d3.axisBottom(timeScale)
+                            .ticks(d3.timeMonth.every(1))
+                            .tickSize(2)
+                            .tickFormat(function(date){
+                              if (d3.timeYear(date).getMonth() < date.getMonth()) {
+                                return d3.timeFormat('%b')(date);
+                              } else {
+                                return d3.timeFormat('%Y')(date);
+                              }
+                            });
+
+      const brush = d3.brushX()
+        .extent([[0, 0], [width, height]])
+        //.on("brush", brushed)
+        //.on("end", brushended);
+
+      rangeSvg.append("g")
+        .call(brush)
 
       rangeSvg.append("g")
               .call(bottomAxis)
-              //.attr("transform", "translate(0," + (20)+")")
+              .attr("transform", "translate(0," + (timeListenningScale(d3.max(groupByDay, h => h.msPlayedTotal)))+")")
               .style("font-size",3);
 
 
