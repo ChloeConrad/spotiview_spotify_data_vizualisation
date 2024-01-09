@@ -13,6 +13,8 @@ def clean_artist(data_artists, genre_occurences, artists_occ) :
             artists_genre[artist] = {"genre" : list(genre_occ.keys())[0]}
             if artist in artists_occ :
                 artists_genre[artist]["occurence"] = artists_occ[artist]
+            artists_genre[artist]["followers"] = l["followers"]["total"]
+            artists_genre[artist]["images"] = l["images"]
     return artists_genre
 
 
