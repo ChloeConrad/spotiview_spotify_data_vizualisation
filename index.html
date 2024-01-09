@@ -44,6 +44,24 @@
         return filteredDicoGenre;
     }
 
+    function getFavArtists(data, nbArtists) {
+            var artists =  data.map(function(value, index) {return value['master_metadata_album_artist_name']});
+            var artists_count = {};
+
+            artists.forEach(function(value, index) {
+                if (value in artists_count) {
+                    artists_count[value] += 1;
+                } else {
+                    artists_count[value] = 1;
+                }
+            });
+            artists_count = Object.entries(artists_count).map(([name, occurrences]) => ({ name, occurrences }));
+            artists_count.sort((a, b) => b.occurrences - a.occurrences);
+            top_artists = artists_count.slice(0, nbArtists).map(artist => artist.name);
+            return top_artists;
+
+        }
+
 
     d3.json("datasets/tracks/albums_elliot.json").then(function (albums_elliot) {
         filteredData = getGenresDistr(albums_elliot,0.1);
