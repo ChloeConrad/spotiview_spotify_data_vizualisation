@@ -33,16 +33,52 @@
     </div>
 
     <div class="container">
-        <div id="general_viz" class="row">
-            <div id="genres" class="col bg-light overflow-auto rounded m-1"> 
+        <div id="general_viz" class="row m-0 p-1">
+            <div class=" titre row my-5">
+              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+                  Les top genres musicaux
+              </div>
+    
+              <div id="genres" class="col bg-light overflow-auto rounded m-1"> 
+              </div>
+    
+              <div id="genres-details" class="col-2 bg-light overflow-auto rounded m-1">
+              </div>
             </div>
-            
-            <div id="artists" class="col bg-light rounded m-1 text-center"> 
-                
+    
+            <div class="row my-5">
+              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+                Les 10 artists les plus écoutés
+              </div>
+              <div id="top-artists" class="col bg-light overflow-auto rounded m-1"> 
+              </div>
+    
+              <div id="top-artists-details" class="col-2 bg-light overflow-auto rounded m-1">
+              </div>
             </div>
-            <div id="songs" class="col bg-light overflow-auto rounded m-1 "> 
-                
-            </div>
+    
+            <div class="row my-5">
+              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+                Les artists 
+              </div>
+              <div id="artists" class="col bg-light overflow-auto rounded m-1"> 
+              </div>
+      
+              <div id="artists-details" class="col-2 bg-light overflow-auto rounded m-1">
+              </div>
+              </div>
+    
+            <div class="row my-5">
+              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+                Les sons
+              </div>
+    
+              <div id="songs" class="col bg-light overflow-auto rounded m-1 "> 
+              </div>
+    
+              <div id="songs-details" class="col-2 bg-light overflow-auto rounded m-1">
+              </div>
+          </div>
        </div>
     </div>   
 </body>
@@ -243,19 +279,7 @@
     }
 
 
-    function getGenresDistr(data,seuil) {
-        var dicoGenres = {}
-        for(var i = 0; i<data.length; i++){
-            var genre =  data[i].genres
-            for(var t = 0 ; t<genre.length; t++){
-                if(genre[t] in dicoGenres) {
-                    dicoGenres[genre[t]] = dicoGenres[genre[t]] + 1;
-                }
-                else {
-                    dicoGenres[genre[t]] = 1;
-                }
-            }
-        }
+    function filterMostListen(dicoGenres,seuil) {
         var valuesArray = Object.values(dicoGenres);
         valuesArray.sort((a, b) => b - a);
         var val_seuil = valuesArray[Math.floor(valuesArray.length * seuil)];
@@ -283,35 +307,57 @@
 
         }
 
+    d3.json("datasets/occurences/occurences_genres_elliot.json").then(function (dataGenres) {
+        var filteredGenres = filterMostListen(dataGenres,0.25)
+        plotHist(filteredGenres,"genres");
+    })
 
-
-    d3.json("datasets/tracks/artists_elliot.json").then(function (albums_elliot) {       
-        let filteredData = getGenresDistr(albums_elliot,0.1);
-
-        const w = Object.keys(filteredData).length*3;
+    function plotHist(dataGenres,divName){
+        var tooltip = d3
+            .select('#genres')
+            .append('div')
+            .attr('class', 'd3-tooltip')
+            .style('position', 'absolute')
+            .style('visibility', 'hidden')
+            .style('background', 'rgba(0,0,0,0.6)')
+            .style('border-radius', '4px')
+            .style('color', '#fff')
+        const w = Object.keys(dataGenres).length*6;
         const h = 250;
-
         const yScale = d3.scaleSqrt()
-                .domain([1, d3.max(Object.entries(filteredData), d => +d[1])])
+                .domain([1, d3.max(Object.entries(dataGenres), d => +d[1])])
                 .range([0, h]);
 
-        const barWidth = 2
+        const barWidth = 5
         const barSpacing = 1
-        const svg = d3.select("#genres")
+        const svg = d3.select("#"+divName)
                   .append("svg")
                   .attr("width", w)
                   .attr("height", h);
+
         const bars = svg.selectAll("rect")
-                .data(Object.entries(filteredData))
+                .data(Object.entries(dataGenres))
                 .enter()
                 .append("g");
+
         bars.append("rect")
                 .attr("x", (d, i) => i * (barWidth + barSpacing))
                 .attr("y", (d, i) => (h -  yScale(d[1]))/2)
                 .attr("width", barWidth)
                 .attr("height", (d, i) => (yScale(d[1])))
-                .attr("fill", (d, i) => i % 2 === 0 ? "#1DB954" : "#000000")  // Hexadecimal values for navy and steelblue
+                .attr("fill", (d, i) => i % 2 === 0 ? "#1DB954" : "#000000")  
                 .attr("class", "bar");
-     })
+
+        d3.selectAll("rect")
+                .on('mouseover', function (d, i) {
+                    tooltip
+                        .html(`<div>${this.__data__[0]}</div>`)
+                        .style('visibility', 'visible');
+                })
+                .on('mouseout', function (d,i) {
+                    tooltip
+                        .html(``).style('visibility', 'hidden')
+      });          
+    }
 
 </script>
