@@ -41,18 +41,7 @@
 
     <div class="container">
         <div id="general_viz" class="row m-0 p-1">
-            <div class=" titre row">
-                <!--
-                    <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-                    Les top genres musicaux
-                </div>
-                -->
-                <div id="brush" class="col bg-light overflow-auto rounded m-1"> 
-                </div>
-                <div class="row justify-content-center dates">
-                    &zwnj;
-                </div>
-            </div>
+            
 
             <div class=" titre row my-5">
               <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
@@ -68,7 +57,7 @@
     
             <div class="row my-5">
               <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-                Les 10 artists les plus écoutés
+                Les 10 artistes les plus écoutés
               </div>
               <div id="top-artists" class="col bg-light overflow-auto rounded m-1"> 
               </div>
@@ -79,12 +68,19 @@
     
             <div class="row my-5">
               <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-                Les artists 
+                Les artistes 
               </div>
-              <div id="artists" class="col bg-light overflow-auto rounded m-1 p-3"> 
+              <div id="artists" class="col bg-light overflow-auto rounded m-1 p-3">
+                <div class=" titre row">
+                
+                
+                    <div id="brush" class="col bg-light overflow-auto rounded m-1"> 
+                    </div>
+                    <div class="row justify-content-center dates">
+                        &zwnj;
+                    </div>
+                </div> 
               </div>
-      
-              
               </div>
     
             <div class="row my-5">
@@ -265,7 +261,7 @@
             
                 g.append("text")
                     .attr("class", "value-text")
-                    .text(`${data.value}`)
+                    .text(`${parseFloat(data.value).toFixed(2)} %`)
                     .attr('text-anchor', 'middle')
                     .attr('dy', '.6em');
                 })
@@ -458,14 +454,15 @@
                 .append("g");
 
         bars.append("rect")
+                
                 .attr("x", (d, i) => i * (barWidth + barSpacing))
                 .attr("y", (d, i) => (h -  yScale(d[1]))/2)
                 .attr("width", barWidth)
                 .attr("height", (d, i) => (yScale(d[1])))
                 .attr("fill", (d, i) => i % 2 === 0 ? "#1DB954" : "#000000")  
-                .attr("class", "bar");
+                .attr("class", "bar elemHistGenre");
 
-        d3.selectAll("rect")
+        d3.selectAll(".elemHistGenre")
                 .on('mouseover', function (d, i) {
                     var maDiv = document.getElementById("genres-details");
                     maDiv.innerHTML = "<strong> Genre : </strong> <br>" + i[0];
