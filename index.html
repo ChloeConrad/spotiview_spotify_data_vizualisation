@@ -34,8 +34,8 @@
 <body>
     <div class="container">
         <select id="subject" class="form-select" onchange="selectSubject()">
-            <option selected value="Elliot">Elliot</option>
-            <option value="Elodie">Elodie</option>
+            <option selected value="elliot">Elliot</option>
+            <option value="elodie">Elodie</option>
         </select>
     </div>
 
@@ -81,11 +81,10 @@
               <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
                 Les artists 
               </div>
-              <div id="artists" class="col bg-light overflow-auto rounded m-1"> 
+              <div id="artists" class="col bg-light overflow-auto rounded m-1 p-3"> 
               </div>
       
-              <div id="artists-details" class="col-2 bg-light overflow-auto rounded m-1">
-              </div>
+              
               </div>
     
             <div class="row my-5">
@@ -431,21 +430,15 @@
 
         }
 
-    d3.json("datasets/occurences/occurences_genres_elliot.json").then(function (dataGenres) {
+    d3.json("datasets/occurences/occurences_genres_"+document.getElementById("subject").value+".json").then(function (dataGenres) {
         var filteredGenres = filterMostListen(dataGenres,0.25)
         plotHist(filteredGenres,"genres");
     })
 
+ 
+
     function plotHist(dataGenres,divName){
-        var tooltip = d3
-            .select('#genres')
-            .append('div')
-            .attr('class', 'd3-tooltip')
-            .style('position', 'absolute')
-            .style('visibility', 'hidden')
-            .style('background', 'rgba(0,0,0,0.6)')
-            .style('border-radius', '4px')
-            .style('color', '#fff')
+        
         const w = Object.keys(dataGenres).length*6;
         const h = 250;
         const yScale = d3.scaleSqrt()
@@ -474,13 +467,14 @@
 
         d3.selectAll("rect")
                 .on('mouseover', function (d, i) {
-                    tooltip
-                        .html(`<div>${this.__data__[0]}</div>`)
-                        .style('visibility', 'visible');
+                    var maDiv = document.getElementById("genres-details");
+                    maDiv.innerHTML = "<strong> Genre : </strong> <br>" + i[0];
+                    maDiv.innerHTML += "<br> <strong> Nombre d'écoutes : </strong> <br>" + i[1];
                 })
                 .on('mouseout', function (d,i) {
-                    tooltip
-                        .html(``).style('visibility', 'hidden')
+                    var maDiv = document.getElementById("genres-details");
+                    maDiv.innerHTML = "";
+                    
       });          
     }
 
