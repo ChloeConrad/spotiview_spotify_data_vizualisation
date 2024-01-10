@@ -7,11 +7,18 @@
 </head>
 
 <style>
-    /*
+
+    .dates {
+        font-family: "Verdana";
+        font-size: 3em;
+    }
+    
     .pie text {
         font-family: "Verdana";
         fill: #888;
     }
+
+
 
     .pie .name-text{
         font-size: 1em;
@@ -34,13 +41,16 @@
 
     <div class="container">
         <div id="general_viz" class="row m-0 p-1">
-            <div class=" titre row my-5">
+            <div class=" titre row">
                 <!--
                     <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
                     Les top genres musicaux
                 </div>
                 -->
                 <div id="brush" class="col bg-light overflow-auto rounded m-1"> 
+                </div>
+                <div class="row justify-content-center dates">
+                    &zwnj;
                 </div>
             </div>
 
@@ -374,6 +384,14 @@
         // Filter history with the selected range
         if( !(startTimestampFilter === null || startTimestampFilter === null) ) {
             window.global.historyFiltered = window.global.historyFiltered.filter( h => h.ts >= startTimestampFilter && h.ts <= endTimestampFilter)
+            
+            var tmp1 = startTimestampFilter.toISOString().slice(0,10).split("-");
+            var tmp2 = endTimestampFilter.toISOString().slice(0,10).split("-");
+
+
+
+            d3.select(".dates")
+                .text(tmp1[2]+"/"+tmp1[1]+"/"+tmp1[0]+" - "+tmp2[2]+"/"+tmp2[1]+"/"+tmp2[0])
         }
 
         // Updates all views
