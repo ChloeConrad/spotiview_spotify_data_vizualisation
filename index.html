@@ -152,9 +152,11 @@
             d.totalTs = d.totalTs * 100 / totalMs
         })
 
+        /*
         artists.sort(function(x, y){
             return d3.descending(x.totalTs, y.totalTs);
         })
+        */
                 
         var text = "";
 
@@ -282,7 +284,7 @@
         }
 
 
-    /*
+
     d3.json("datasets/tracks/artists_elliot.json").then(function (albums_elliot) {       
         let filteredData = getGenresDistr(albums_elliot,0.1);
 
@@ -311,5 +313,5 @@
                 .attr("fill", (d, i) => i % 2 === 0 ? "#1DB954" : "#000000")  // Hexadecimal values for navy and steelblue
                 .attr("class", "bar");
      })
-     */
+
 </script>
