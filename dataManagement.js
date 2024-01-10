@@ -12,6 +12,12 @@ async function loadFullData() {
 
   if(window.global.subject == "Elliot") {
     window.global.fullHistory = await loadJson("datasets/tracks/light_streaming_history_elliot.json")
+    
+    console.log(window.global.fullHistory)
+
+    window.global.fullHistory.forEach( d => {
+      d.ts = new Date(d.ts)
+    }) 
     window.global.fullArtists = d3.group(await loadJson("datasets/tracks/artists_elliot.json"), d=>d.id)
     window.global.fullAlbums  = d3.group(await loadJson("datasets/tracks/albums_elliot.json"), d=>d.id)
     window.global.fullTracks  = d3.group(await loadJson("datasets/tracks/tracks_elliot.json"), d=>d.id)

@@ -35,6 +35,16 @@
     <div class="container">
         <div id="general_viz" class="row m-0 p-1">
             <div class=" titre row my-5">
+                <!--
+                    <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+                    Les top genres musicaux
+                </div>
+                -->
+                <div id="brush" class="col bg-light overflow-auto rounded m-1"> 
+                </div>
+            </div>
+
+            <div class=" titre row my-5">
               <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
                   Les top genres musicaux
               </div>
@@ -91,6 +101,9 @@
         fullArtists : null,
         fullAlbums  : null,
         fullTracks  : null,
+
+        startTimestampFilter    : null,
+        endTimestampFilter      : null,
         
         historyFiltered : null,
         artistFiltered : null,
@@ -127,21 +140,15 @@
     })
 
     artists()
+    brush()
 
     function artists() {
 
+        console.log("Artists")
+
         // https://codepen.io/zakariachowdhury/pen/EZeGJy
 
-        /*
-        var data = [
-            {name: "USA", value: 40.5},
-            {name: "UK", value: 20},
-            {name: "Canada", value: 29.5},
-            {name: "Maxico", value: 10},
-        ];
-        */
-
-        const groupedHistoryByTracks = d3.group(window.global.fullHistory, d => d.trackId)
+        const groupedHistoryByTracks = d3.group(window.global.historyFiltered, d => d.trackId)
         console.log(groupedHistoryByTracks)
 
         const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
@@ -150,12 +157,12 @@
         }));
 
 
-        artists = []
+        var artistsList = []
         tracks.forEach(d=>{
             // Pour chaque artists présent dans la track
             if(window.global.fullTracks.get(d.trackId)) {
                 window.global.fullTracks.get(d.trackId)[0].artists.forEach(a => {
-                    artists.push({
+                    artistsList.push({
                         artist  : a,
                         totalTs : d.totalTs
                     })
@@ -163,8 +170,8 @@
             }
         })
 
-        artists = d3.group(artists, d => d.artist)
-        artists = Array.from(artists, ([key, values]) => {
+        artistsList = d3.group(artistsList, d => d.artist)
+        artistsList = Array.from(artistsList, ([key, values]) => {
 
             if(window.global.fullArtists.get(key)) {
                 return {
@@ -179,12 +186,12 @@
             }
         });
 
-        console.log("artist", artists)
+        console.log("artist", artistsList)
 
-        const totalMs = d3.sum(artists, d => d.totalTs)
+        const totalMs = d3.sum(artistsList, d => d.totalTs)
 
         
-        artists.forEach(d=>{
+        artistsList.forEach(d=>{
             d.totalTs = d.totalTs * 100 / totalMs
         })
 
@@ -202,9 +209,17 @@
 
         var radius = Math.min(width, height) / 2;
         var color = d3.scaleOrdinal(d3.schemeCategory10);
+    
+
+        var donutExist = d3.select('#artistDonut').size() > 0;
+
+        if(donutExist) {
+            d3.select('#artistDonut').remove()
+        }
 
         var svg = d3.select("#artists")
             .append('svg')
+            .attr("id", "artistDonut")
             .attr('class', 'pie')
             .attr('width', width)
             .attr('height', height);
@@ -221,7 +236,7 @@
             .sort(null);
 
         var path = g.selectAll('path')
-            .data(pie(artists))
+            .data(pie(artistsList))
             .enter()
             .append("g")
             .on("mouseover", function(d,data) {
@@ -278,6 +293,97 @@
             .text(text);
     }
 
+    function brush() {
+        const groupByDay = d3.groups(window.global.fullHistory, (d) => {
+            return new Date(d.ts.toDateString())
+        })
+
+        groupByDay.forEach(day => {
+            const [i, historyOfDay] = day;
+            day.msPlayedTotal = d3.sum(historyOfDay, d => d.ms_played);
+        });
+
+        const width = 300
+        const height = 30
+
+        const space = 8
+
+        const rangeSvg =  d3.select("#brush")
+            .append("svg")
+            .attr("id", "rangesvg")
+            .attr("viewBox", [0, 0, width, height])
+            //.style("background-color", "silver")
+
+        const timeScale = d3.scaleTime([d3.min(groupByDay, h => h[0]), d3.max(groupByDay, h => h[0])],[0,width])
+        const timeListenningScale = d3.scaleTime([d3.min(groupByDay, h => h.msPlayedTotal), d3.max(groupByDay, h => h.msPlayedTotal)],[0,height - space])
+
+        rangeSvg.append("g")
+            .selectAll("rect")
+            .data(groupByDay)
+            .enter()
+            .append("rect")
+            .attr("x", (d, i) => timeScale(d[0]) - width * 0.5 / groupByDay.length)
+            .attr("y", (d, i) =>{
+                return height-space-timeListenningScale(d.msPlayedTotal)
+            })
+            .attr("width", width / groupByDay.length)
+            .attr("height", (d) => timeListenningScale(d.msPlayedTotal))
+
+        
+
+        const bottomAxis =  d3.axisBottom(timeScale)
+                                .ticks(d3.timeMonth.every(1))
+                                .tickSize(2)
+                                .tickFormat(function(date){
+                                if (d3.timeYear(date).getMonth() < date.getMonth()) {
+                                    return d3.timeFormat('%b')(date);
+                                } else {
+                                    return d3.timeFormat('%Y')(date);
+                                }
+                            });
+
+        const brush = d3.brushX()
+            .extent([[0, 0], [width, height]])
+            .on("end", (e) => {
+                window.global.startTimestampFilter = timeScale.invert(e.selection[0])
+                window.global.endTimestampFilter = timeScale.invert(e.selection[1])
+                updateAll()
+            })
+
+        rangeSvg.append("g")
+            .call(brush)
+
+        rangeSvg.append("g")
+                .call(bottomAxis)
+                .attr("transform", "translate(0," + (timeListenningScale(d3.max(groupByDay, h => h.msPlayedTotal)))+")")
+                .style("font-size",3);
+    }
+
+    function updateAll() {
+        console.log("UPDATE")
+
+
+        // Reset
+        window.global.historyFiltered = window.global.fullHistory
+
+        console.log("Avant",window.global.historyFiltered.length)
+
+        const startTimestampFilter = window.global.startTimestampFilter
+        const endTimestampFilter = window.global.endTimestampFilter
+
+        // Filter history with the selected range
+        if( !(startTimestampFilter === null || startTimestampFilter === null) ) {
+            window.global.historyFiltered = window.global.historyFiltered.filter( h => h.ts >= startTimestampFilter && h.ts <= endTimestampFilter)
+        }
+
+        // Updates all views
+
+        console.log("art",artists)
+
+        artists()
+
+        
+    }
 
     function filterMostListen(dicoGenres,seuil) {
         var valuesArray = Object.values(dicoGenres);
