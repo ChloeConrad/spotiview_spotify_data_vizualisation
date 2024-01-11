@@ -151,6 +151,8 @@
     artists()
     brush()
     topArtistsViz()
+    var select = document.getElementById("subject");
+    select.addEventListener('change', topArtistsViz);
 
     function artists() {
 
@@ -414,20 +416,19 @@
     }
 
     function getFavArtists(data, nbArtists) {
+            console.log("getFavArtists");
             var artists =  data.map(function(value, index) {return value['master_metadata_album_artist_name']});
             var artists_count = {};
 
             artists.forEach(function(value, index) {
                 if (value in artists_count) {
                     artists_count[value] += 1;
-                } else {
+                } else if(value != null){
                     artists_count[value] = 1;
                 }
             });
             artists_count = Object.entries(artists_count).map(([name, occurrences]) => ({ name, occurrences }));
             artists_count.sort((a, b) => b.occurrences - a.occurrences);
-            console.log("data")
-            console.log(artists_count)
             var top_artists = artists_count.slice(0, nbArtists).map(artist => artist.name);
             return top_artists;
 
@@ -439,8 +440,10 @@
     })
 
     function topArtistsViz() {
-        d3.json('datasets/tracks/streaming_history_elliot.json').then(function(listening_history){
-            d3.json("datasets/tracks/clean_artists_elliot.json").then(function(artists){
+        document.getElementById("firstfive").innerHTML = ""; 
+        document.getElementById("lastfive").innerHTML = ""; 
+        d3.json('datasets/tracks/streaming_history_'+document.getElementById("subject").value+'.json').then(function(listening_history){
+            d3.json('datasets/tracks/clean_artists_'+document.getElementById("subject").value+'.json').then(function(artists){
             var topTenArtists = getFavArtists(listening_history, 10);
             var topTenInfo = Object.fromEntries(
                 Object.entries(artists)
@@ -455,6 +458,7 @@
                 return [artist, { ...info, rank: topTenArtists.indexOf(artist) + 1 }];
                 })
             );
+            console.log("topteninfo")
             console.log(topTenInfo)
 
             var topFiveArtists = Object.fromEntries(
