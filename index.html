@@ -150,9 +150,13 @@
 
     artists()
     brush()
+    genresViz()
     topArtistsViz()
     var select = document.getElementById("subject");
-    select.addEventListener('change', topArtistsViz);
+    select.addEventListener('change', () => {
+        topArtistsViz();
+        genresViz();
+    });
 
     function artists() {
 
@@ -433,11 +437,12 @@
             return top_artists;
 
         }
-
-    d3.json("datasets/occurences/occurences_genres_"+document.getElementById("subject").value+".json").then(function (dataGenres) {
-        var filteredGenres = filterMostListen(dataGenres,0.25)
-        plotHist(filteredGenres,"genres");
-    })
+    function genresViz() {
+        d3.json("datasets/occurences/occurences_genres_"+document.getElementById("subject").value+".json").then(function (dataGenres) {
+            var filteredGenres = filterMostListen(dataGenres,0.25)
+            plotHist(filteredGenres,"genres");
+        })
+    }
 
     function topArtistsViz() {
         document.getElementById("firstfive").innerHTML = ""; 
@@ -617,7 +622,7 @@
  
 
     function plotHist(dataGenres,divName){
-        
+        document.getElementById(divName).innerHTML = "";
         const w = Object.keys(dataGenres).length*6;
         const h = 250;
         const yScale = d3.scaleSqrt()
