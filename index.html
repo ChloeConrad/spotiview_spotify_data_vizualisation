@@ -374,7 +374,6 @@
         // Reset
         window.global.historyFiltered = window.global.fullHistory
 
-        console.log("Avant",window.global.historyFiltered.length)
 
         const startTimestampFilter = window.global.startTimestampFilter
         const endTimestampFilter = window.global.endTimestampFilter
@@ -446,7 +445,6 @@
     }
 
     function getTopArtistsByGenre(genre,artists) {
-        console.log(genre)
         var artistsByGenre = {};
         for (var artiste in artists) {
             if (artists.hasOwnProperty(artiste) && artists[artiste].genre === genre) {
