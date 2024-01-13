@@ -128,10 +128,8 @@
     window.global.albumsFiltered     = window.global.fullAlbums
     window.global.fullTracksFiltered = window.global.fullTracks
 
-    console.log("ça")
 
     const groupedHistoryByTracks = d3.group(window.global.fullHistory, d => d.trackId)
-    console.log(groupedHistoryByTracks)
 
     const result = Array.from(groupedHistoryByTracks, ([key, values]) => ({
         artist: key,
@@ -160,12 +158,10 @@
 
     function artists() {
 
-        console.log("Artists")
 
         // https://codepen.io/zakariachowdhury/pen/EZeGJy
 
         const groupedHistoryByTracks = d3.group(window.global.historyFiltered, d => d.trackId)
-        console.log(groupedHistoryByTracks)
 
         const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
             trackId: key,
@@ -202,7 +198,6 @@
             }
         });
 
-        console.log("artist", artistsList)
 
         const totalMs = d3.sum(artistsList, d => d.totalTs)
 
@@ -262,7 +257,6 @@
                     .append("g")
                     .attr("class", "text-group");
 
-                console.log("ARTIST",data.data.artist,window.global.fullTracks)
 
                 g.append("text")
                     .attr("class", "name-text")
@@ -294,7 +288,6 @@
                     .style("filter", "contrast(200%)")        
             })
             .on("mouseout", function(d) {
-                console.log("tt")
                 d3.selectAll(".piePart")
                     .style("filter", "contrast(100%)")
                     .style('fill', (d,i) => {
@@ -376,7 +369,6 @@
     }
 
     function updateAll() {
-        console.log("UPDATE")
 
 
         // Reset
@@ -402,7 +394,6 @@
 
         // Updates all views
 
-        console.log("art",artists)
 
         artists()
 
@@ -420,7 +411,6 @@
     }
 
     function getFavArtists(data, nbArtists) {
-            console.log("getFavArtists");
             var artists =  data.map(function(value, index) {return value['master_metadata_album_artist_name']});
             var artists_count = {};
 
@@ -437,10 +427,51 @@
             return top_artists;
 
         }
+
+    
+    function getGenres(artists) {
+        var sommesParGenre = {};
+        for (var artiste in artists) {
+            var genre = artists[artiste].genre;
+            if ("occurence" in artists[artiste]) {
+                var count = artists[artiste]["occurence"]
+                if (sommesParGenre.hasOwnProperty(genre) ) {
+                    sommesParGenre[genre] += count;
+                } else {
+                    sommesParGenre[genre] = count;
+                }
+            }
+        }
+        return sommesParGenre
+    }
+
+    function getTopArtistsByGenre(genre,artists) {
+        console.log(genre)
+        var artistsByGenre = {};
+        for (var artiste in artists) {
+            if (artists.hasOwnProperty(artiste) && artists[artiste].genre === genre) {
+                artistsByGenre[artiste]=artists[artiste];
+            }
+        }
+
+        var keys = Object.keys(artistsByGenre);
+
+        // Trier les clés en fonction des occurrences (du plus grand au plus petit)
+        var sortedKeys = keys.sort(function(a, b) {
+            return artistsByGenre[b].occurence - artistsByGenre[a].occurence;
+        });
+
+        // Sélectionner les trois premières clés
+        var topThreeArtists = sortedKeys.slice(0, 3);
+        return topThreeArtists;
+    }
+
     function genresViz() {
-        d3.json("datasets/occurences/occurences_genres_"+document.getElementById("subject").value+".json").then(function (dataGenres) {
-            var filteredGenres = filterMostListen(dataGenres,0.25)
-            plotHist(filteredGenres,"genres");
+        d3.json("datasets/tracks/clean_artists_"+document.getElementById("subject").value+".json").then(function (artists) {
+
+            var dataGenres = getGenres(artists)
+            var filteredGenres = filterMostListen(dataGenres,0.5)
+            plotHist(filteredGenres,"genres",artists);
         })
     }
 
@@ -463,8 +494,7 @@
                 return [artist, { ...info, rank: topTenArtists.indexOf(artist) + 1 }];
                 })
             );
-            console.log("topteninfo")
-            console.log(topTenInfo)
+            
 
             var topFiveArtists = Object.fromEntries(
                 Object.entries(topTenInfo)
@@ -621,11 +651,11 @@
 
  
 
-    function plotHist(dataGenres,divName){
+    function plotHist(dataGenres,divName,artists){
         document.getElementById(divName).innerHTML = "";
         const w = Object.keys(dataGenres).length*6;
         const h = 250;
-        const yScale = d3.scaleSqrt()
+        const yScale = d3.scaleLog()
                 .domain([1, d3.max(Object.entries(dataGenres), d => +d[1])])
                 .range([0, h]);
 
@@ -652,9 +682,18 @@
 
         d3.selectAll(".elemHistGenre")
                 .on('mouseover', function (d, i) {
+                    var topArtists = getTopArtistsByGenre(i[0],artists)
                     var maDiv = document.getElementById("genres-details");
                     maDiv.innerHTML = "<strong> Genre : </strong> <br>" + i[0];
-                    maDiv.innerHTML += "<br> <strong> Nombre d'écoutes : </strong> <br>" + i[1];
+                    maDiv.innerHTML += "<br><br> <strong> Nombre d'écoutes : </strong> <br>" + i[1];
+                    maDiv.innerHTML += "<br><br> <strong> Top 3 artistes : </strong><ul>";
+
+                    topArtists.forEach(element => {
+                        if (element !== undefined) {
+                            maDiv.innerHTML += "<li>" + element+"</li>";
+                        }
+                    });
+                    maDiv.innerHTML += '</ul>'
                 })
                 .on('mouseout', function (d,i) {
                     var maDiv = document.getElementById("genres-details");
