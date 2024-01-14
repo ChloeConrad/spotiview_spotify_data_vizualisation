@@ -10,27 +10,31 @@ function filterMostListen(dicoGenres,seuil) {
 
 function getGenres(artists) {
     var sommesParGenre = {};
-    for (var artiste in artists) {
-        var genre = artists[artiste].genre;
-        if ("occurence" in artists[artiste]) {
-            var count = artists[artiste]["occurence"]
-            if (sommesParGenre.hasOwnProperty(genre) ) {
-                sommesParGenre[genre] += count;
-            } else {
-                sommesParGenre[genre] = count;
-            }
+
+    for(var x in artists){
+        if(artists[x].artist !== "que dalle et jcomprend pas srx") {
+            artists[x].artist.genres.forEach( g => {
+                if (sommesParGenre.hasOwnProperty(g) ) {
+                    sommesParGenre[g] += artists[x].totalTs;
+                } else {
+                    sommesParGenre[g] = artists[x].totalTs;
+                }
+            })
         }
-    }
+    }   
     return sommesParGenre
 }
 
 function getTopArtistsByGenre(genre,artists) {
     var artistsByGenre = {};
     for (var artiste in artists) {
-        if (artists.hasOwnProperty(artiste) && artists[artiste].genre === genre) {
-            artistsByGenre[artiste]=artists[artiste];
+        if(artists[artiste].artist !== "que dalle et jcomprend pas srx"){
+            if (artists.hasOwnProperty(artiste) && artists[artiste].artist.genres.includes(genre)) {
+                artistsByGenre[artiste]=artists[artiste];
+            }
         }
     }
+
 
     var keys = Object.keys(artistsByGenre);
 
@@ -45,12 +49,51 @@ function getTopArtistsByGenre(genre,artists) {
 }
 
 function genresViz() {
-    d3.json("datasets/tracks/clean_artists_"+document.getElementById("subject").value+".json").then(function (artists) {
+    const groupedHistoryByTracks = d3.group(
+        window.global.historyFiltered,
+        (d) => d.trackId
+    );
 
-        var dataGenres = getGenres(artists)
-        var filteredGenres = filterMostListen(dataGenres,0.5)
-        plotHist(filteredGenres,"genres",artists);
-    })
+    const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
+        trackId: key,
+        totalTs: d3.sum(values, (d) => d.ms_played),
+    }));
+
+    var artistsList = [];
+    tracks.forEach((d) => {
+        // Pour chaque artists présent dans la track
+        if (window.global.fullTracks.get(d.trackId)) {
+        window.global.fullTracks.get(d.trackId)[0].artists.forEach((a) => {
+            artistsList.push({
+            artist: a,
+            totalTs: d.totalTs,
+            });
+        });
+        }
+    });
+
+    artistsList = d3.group(artistsList, (d) => d.artist);
+    artistsList = Array.from(artistsList, ([key, values]) => {
+        if (window.global.fullArtists.get(key)) {
+        return {
+            artist: window.global.fullArtists.get(key)[0],
+            totalTs: d3.sum(values, (d) => d.totalTs),
+        };
+        }
+
+        return {
+        artist: "que dalle et jcomprend pas srx",
+        totalTs: 0,
+        };
+    });
+
+    artistsList = Object.fromEntries(artistsList.map(x => [x.artist.name, x]));
+
+    var dataGenres = getGenres(artistsList)
+
+    var filteredGenres = filterMostListen(dataGenres,0.5)
+    plotHist(filteredGenres,"genres",artistsList); 
+
 }
 
 function plotHist(dataGenres,divName,artists){
@@ -58,8 +101,8 @@ function plotHist(dataGenres,divName,artists){
     const w = Object.keys(dataGenres).length*6;
     const h = 250;
     const yScale = d3.scaleLog()
-            .domain([1, d3.max(Object.entries(dataGenres), d => +d[1])])
-            .range([0, h]);
+            .domain([d3.min(Object.entries(dataGenres), d => +d[1]), d3.max(Object.entries(dataGenres), d => +d[1])])
+            .range([h/10, h]);
 
     const barWidth = 5
     const barSpacing = 1
@@ -74,7 +117,6 @@ function plotHist(dataGenres,divName,artists){
             .append("g");
 
     bars.append("rect")
-            
             .attr("x", (d, i) => i * (barWidth + barSpacing))
             .attr("y", (d, i) => (h -  yScale(d[1]))/2)
             .attr("width", barWidth)
@@ -87,7 +129,7 @@ function plotHist(dataGenres,divName,artists){
                 var topArtists = getTopArtistsByGenre(i[0],artists)
                 var maDiv = document.getElementById("genres-details");
                 maDiv.innerHTML = "<strong> Genre : </strong> <br>" + i[0];
-                maDiv.innerHTML += "<br><br> <strong> Nombre d'écoutes : </strong> <br>" + i[1];
+                maDiv.innerHTML += "<br><br> <strong> Heure d'écoutes : </strong> <br>" + (i[1] / 3600000).toFixed(2)+"h"
                 maDiv.innerHTML += "<br><br> <strong> Top 3 artistes : </strong><ul>";
 
                 topArtists.forEach(element => {
