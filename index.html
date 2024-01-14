@@ -164,6 +164,7 @@
     tracksX: null,
     tracksY: null,
     tracksData: null,
+    trackColorScale: null,
 
   };
 
@@ -204,12 +205,14 @@
   topArtistsViz()
   tracks()
 
-  d3.select("#selectorMainArtistsPath")
+  setTimeout(function() {
+    d3.select("#selectorMainArtistsPath")
     .node()
     .dispatchEvent(new MouseEvent("click"));
   d3.select("#selectorMainArtistsG")
     .node()
     .dispatchEvent(new MouseEvent("click"));
+  }, 10);
 
   var select = document.getElementById("subject");
   select.addEventListener("change", async () => {
@@ -218,10 +221,6 @@
   });
 
   function tracks() {
-
-    console.log(window.global.startTimestampFilter)
-    console.log(window.global.endTimestampFilter)
-
     var h = window.global.historyFiltered
 
     const format = d3.utcFormat("%d-%m-%Y");
@@ -273,10 +272,9 @@
 
     h.map( x => {
       x.mean = d3.mean(x.series)
-      x.series = movingAverage(x.series, interval)
+      x.series = movingAverage(x.series, interval).map(x => x/3600)
     })
 
-    console.log("avant sort", h)
 
     var sortedH = [...h].sort(function(x, y){
       return d3.descending(x.mean, y.mean);
@@ -284,29 +282,25 @@
 
     sortedH = sortedH.slice(0,200).map(d => d.trackId)
     
-    console.log(sortedH)
 
     h = h.filter( x => sortedH.includes(x.trackId))
 
-    console.log("après sort", h)
 
     var data = {
       tracks: h.map(x => x.trackId),
-      mean: h.map(x => x.mean),
       series: h.map(x => {
         return {
           values: x.series,
-          trackId: x.trackId 
+          trackId: x.trackId,
+          mean: x.mean
         }
       }),
       dates: dateRange
     }
 
-    console.log(data)
 
     window.global.tracksData = data
 
-    console.log(data)
 
     // https://observablehq.com/@mguiv/construire-un-graphique-pas-a-pas-avec-d3-js
 
@@ -337,12 +331,16 @@
     var yAxis = g => g
       .attr("transform", `translate(${margin.left},0)`) // on déplace l'axe à gauche
       .call(d3.axisLeft(window.global.tracksY)) // axe de gauche avec les valeurs de y()
-      .call(g => g.select(".domain").remove())
+      //.call(g => g.select(".domain").remove())
       .call(g => g.select(".tick:last-of-type text").clone() // on définit le type de texte à afficher, le style...
           .attr("x", 3)
           .attr("text-anchor", "start")
           .attr("font-weight", "bold")
-          .text(data.y))
+          .text(() => {
+            return "Temps d'écoute moyen (moyenne glissante) en minutes"
+          }))
+
+    d3.select("#tracksSvg").remove()
 
     const svg = d3.select("#songs-details")
                   .append("svg")
@@ -355,19 +353,25 @@
     svg.append("g")
       .call(yAxis);
 
+    console.log("data", data)
+
+    
+    window.global.trackColorScale = d3.scaleSequential().domain([d3.max(data.series, x => x.mean),d3.min(data.series, x => x.mean)])
+      .interpolator(d3.interpolateSpectral);
+    
+
     const path = svg.append("g")
                     .attr("fill", "none") // on laisse l'arrière-plan vide
-                    .attr ('stroke', d3.rgb(0, 0, 0))
                     .attr("stroke-width", 1.5)  // taille de la ligne
                     .attr("stroke-linecap", "round") //type de ligne
                     .selectAll("path")
-                    .data(data.series.slice(0,201))
+                    .data(data.series)
                     .join("path")
+                    .attr ('stroke', d=>window.global.trackColorScale(d.mean))
                     .style("mix-blend-mode", "multiply") // option de style
                     .attr("d", d => line(d.values)); // trace la valeur du taux de chômage (values) associée à un lieu (y) à la date i (x)
 
     svg.call(hoverTracks, path); // on passe path en argument pour la fonction hover
-
   }
 
   function hoverTracks(svg, path) {
@@ -409,11 +413,11 @@
         .attr("dy", "-130")
         .attr("class", "trackText")
     
-  // création d'une puce (rond bleu dans le panneau)      
+    // création d'une puce (rond bleu dans le panneau)      
     dot.append("text")
         .attr("font-size", 20)
         .style("fill", "#FF0000")
-        .attr("dx", "-100")
+        .attr("dx", "-200")
         .attr("dy", "-90")
         .attr("class", "trackText")
         .text("●");
@@ -422,7 +426,7 @@
     dot.append("text")
         .attr("font-family", "sans-serif")
         .attr("font-size", 16)
-        .attr("dx", "-80")
+        .attr("dx", "-180")
         .attr("dy", "-90")
         .attr("class", "trackText")
         .attr("id", "dot-date"); // identifiant date
@@ -431,7 +435,7 @@
     dot.append("text")
         .attr("font-size", 20)
         .style("fill", "#FF0000")
-        .attr("dx", "-100")
+        .attr("dx", "-200")
         .attr("dy", "-50")
         .attr("class", "trackText")
         .text("●");
@@ -439,25 +443,68 @@
     // texte pour les taux de chômage
     dot.append("text")
           .attr("font-size", 16)
-          .attr("dx", "-80")
+          .attr("dx", "-180")
           .attr("dy", "-50")
           .attr("class", "trackText")
           .attr("id", "dot-values") // identifiant
+
+    // -------------------------------------------
+
+    // création d'une puce (rond bleu dans le panneau)      
+    dot.append("text")
+        .attr("font-size", 20)
+        .style("fill", "#FF0000")
+        .attr("dx", "20")
+        .attr("dy", "-90")
+        .attr("class", "trackText")
+        .text("●");
+    
+    // création du texte pour les dates
+    dot.append("text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 16)
+        .attr("dx", "40")
+        .attr("dy", "-90")
+        .attr("class", "trackText")
+        .attr("id", "dot-datee"); // identifiant date
+
+    // création d'une puce (rond bleu dans le panneau)      
+    dot.append("text")
+        .attr("font-size", 20)
+        .style("fill", "#FF0000")
+        .attr("dx", "20")
+        .attr("dy", "-50")
+        .attr("class", "trackText")
+        .text("●");
+    
+    // création du texte pour les dates
+    dot.append("text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 16)
+        .attr("dx", "40")
+        .attr("dy", "-50")
+        .attr("class", "trackText")
+        .attr("id", "dot-listen"); // identifiant date
+
     
   // associe l'affichage du panneau et la transparence des courbes non sélectionnées aux actions de la souris    
     function moved(event) {
       event.preventDefault(); // change les valeurs par défaut affectées aux actions (clics, mouvement de la souris...)
       const pointer = d3.pointer(event, this); // on construit un pointeur (tableau des coordonnées pour l'évènement this)
 
-      console.log(pointer)
 
       const xm = window.global.tracksX.invert(pointer[0]); // retourne le range associé à la coordonnée en x
       const ym = window.global.tracksY.invert(pointer[1]); // retourne le range associé à la coordonné en y
       const i = d3.bisectCenter(window.global.tracksData.dates, xm); // index de la valeur de la date la plus proche de xm
       const s = d3.least(window.global.tracksData.series.slice(0,201), d => Math.abs(d.values[i] - ym)); // retourne les taux de chômage tels que la distance entre ym et ces taux à la date xm soit minimale
       const dateFormat = d3.timeFormat("%d/%m/%Y"); // on change le format des dates pour un plus joli affichage
-      path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise(); // trace une ligne avec les valeurs précédentes, raise() sert à faire passer cette ligne au premier plan
+      path.attr("stroke", d => {
+          return d === s ? window.global.trackColorScale(s.mean) : "#ddd"
+        })
+        .filter(d => d === s).raise(); // trace une ligne avec les valeurs précédentes, raise() sert à faire passer cette ligne au premier plan
       
+        
+
       dot.attr("transform", () => {
         var a = window.global.tracksX(window.global.tracksData.dates[i])
         var b = window.global.tracksY(s.values[i])
@@ -483,14 +530,34 @@
       var ar = window.global.fullArtists.get(t.artists[0])[0].name
       t = t.name
 
+      var count = 25;
+
       dot.select("#dot-name")
         .text(t); 
       
       d3.select('#dot-date')
-        .text("Artist :  " + ar); 
+        .text(() => {
+          var tt = "Artist :  " + ar
+          return tt.slice(0, count) + (tt.length > count ? "..." : "");
+        }); 
       
       d3.select('#dot-values')
-          .text("Album :  "+ al);
+          .text(() => {
+            var tt = "Album :  "+ al
+            return tt.slice(0, count) + (tt.length > count ? "..." : "");
+          }); 
+
+      d3.select('#dot-listen')
+          .text(() => {
+            var tt = dateFormat(window.global.tracksData.dates[i])
+            return tt.slice(0, count) + (tt.length > count ? "..." : "");
+          }); 
+
+      d3.select('#dot-datee')
+          .text(() => {
+            var tt = ""+s.values[i].toFixed(2)+" minute(s)"
+            return tt.slice(0, count) + (tt.length > count ? "..." : "");
+          }); 
       
     }
     
@@ -503,7 +570,10 @@
 
   // définit ce qu'il se passe à la sortie de la souris dans le graphe
     function left() {
-      path.style("mix-blend-mode", "multiply").attr("stroke", null);
+      path.style("mix-blend-mode", "multiply").attr("stroke", (d,a,b) => {
+        
+        return window.global.trackColorScale(d.mean)
+      });
       dot.attr("display", "none"); // aucun affichage
     }
   }
@@ -1056,7 +1126,8 @@
     artistsDetails();
     topArtistsViz()
     genresViz()
-    brush()
+    tracks()
+    //brush()
   }
 
   function movingAverage(arr, interval) {
@@ -1073,5 +1144,4 @@
 
     return results;
   }
-
 </script>
