@@ -16,176 +16,175 @@ function getFavArtists(data, nbArtists) {
 
 }
 
+
 function topArtistsViz() {
     document.getElementById("firstfive").innerHTML = ""; 
     document.getElementById("lastfive").innerHTML = ""; 
-    d3.json('datasets/tracks/streaming_history_'+document.getElementById("subject").value+'.json').then(function(listening_history){
-        d3.json('datasets/tracks/clean_artists_'+document.getElementById("subject").value+'.json').then(function(artists){
-        var topTenArtists = getFavArtists(listening_history, 10);
-        var topTenInfo = Object.fromEntries(
-            Object.entries(artists)
-                .filter(([key]) => topTenArtists.includes(key))
-        );
-        topTenInfo = Object.fromEntries(
-          topTenArtists.map(artist => [artist, topTenInfo[artist]])
-        );
-        topTenInfo = Object.fromEntries(
-        topTenArtists.map(artist => {
-            const info = topTenInfo[artist];
-            return [artist, { ...info, rank: topTenArtists.indexOf(artist) + 1 }];
-            })
-        );
-        
+    
+    const groupedHistoryByTracks = d3.group(
+        window.global.historyFiltered,
+        (d) => d.trackId
+    );
 
-        var topFiveArtists = Object.fromEntries(
-            Object.entries(topTenInfo)
-            .filter(([_, info]) => info.rank <= 5)
-        );
+    const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
+        trackId: key,
+        totalTs: d3.sum(values, (d) => d.ms_played),
+    }));
 
-        var bottomFiveArtists = Object.fromEntries(
-            Object.entries(topTenInfo)
-            .filter(([_, info]) => info.rank > 5)
-        );
-        const firstFiveNames = Object.keys(topFiveArtists);
-        const lastFiveNames = Object.keys(bottomFiveArtists);
-        // Container for first 5 artists
-        const top_svg = d3.select("#firstfive").append("svg")
-            .attr("width", "100%")
-            .attr("height", firstFiveNames.length * 100);
-
-        // Add images for each artist
-        top_svg.selectAll("image")
-            .data(firstFiveNames)
-            .enter().append("image")
-            .attr("xlink:href", d => topFiveArtists[d].images[0].url)
-            .attr("width", 80)
-            .attr("height", 80)
-            .attr("x", 50)
-            .attr("y", (d, i) => i * 100 + 10);
-
-
-
-        var top_texts = top_svg.selectAll("text")
-            .data(firstFiveNames)
-            .enter();
-
-            top_texts.append("text")
-            .text(function(d) {
-                return d;
-            })
-            .attr("x", 150)
-            .attr("y", function(_, i) {
-                return i * 100 + 40;
-            })
-            .attr("font-weight", 600)
-            .style("fill", "#1DB954");
-
-            top_texts.append("text")
-            .text(function(d) {
-                return topFiveArtists[d].rank;
-            })
-            .attr("x", 30)
-            .attr("y", function(_, i) {
-                return i * 100 + 60;
-            })
-            .attr("font-weight", 600)
-            .style("fill", "#1DB954");
-
-            top_texts.append("text")
-            .text(function(d) {
-                return "Genre : "+ topFiveArtists[d].genre;
-            })
-            .attr("x", 150)
-            .attr("y", function(_, i) {
-                return i * 100 + 60;
+    var artistsList = [];
+    tracks.forEach((d) => {
+        // Pour chaque artists présent dans la track
+        if (window.global.fullTracks.get(d.trackId)) {
+        window.global.fullTracks.get(d.trackId)[0].artists.forEach((a) => {
+            artistsList.push({
+            artist: a,
+            totalTs: d.totalTs,
             });
-
-            top_texts.append("text")
-            .text(function(d) {
-                return "Nombre d'écoutes : "+topFiveArtists[d].occurence;
-            })
-            .attr("x", 350)
-            .attr("y", function(_, i) {
-                return i * 100 + 40;
-            });
-
-            top_texts.append("text")
-            .text(function(d) {
-                return "Followers : "+topFiveArtists[d].followers;
-            })
-            .attr("x", 350)
-            .attr("y", function(_, i) {
-                return i * 100 + 60;
-            });
-
-        const bottom_svg = d3.select("#lastfive").append("svg")
-            .attr("width", "100%")
-            .attr("height", lastFiveNames.length * 100);
-
-        // Add images for each artist
-        bottom_svg.selectAll("image")
-            .data(lastFiveNames)
-            .enter().append("image")
-            .attr("xlink:href", d => bottomFiveArtists[d].images[0].url)
-            .attr("width", 80)
-            .attr("height", 80)
-            .attr("x", 50)
-            .attr("y", (d, i) => i * 100 + 10);
-
-
-
-        var bottom_texts = bottom_svg.selectAll("text")
-            .data(lastFiveNames)
-            .enter();
-
-            bottom_texts.append("text")
-            .text(function(d) {
-                return d;
-            })
-            .attr("x", 150)
-            .attr("y", function(_, i) {
-                return i * 100 + 40;
-            })
-            .attr("font-weight", 600)
-            .style("fill", "#1DB954");
-
-            bottom_texts.append("text")
-            .text(function(d) {
-                return bottomFiveArtists[d].rank;
-            })
-            .attr("x", 30)
-            .attr("y", function(_, i) {
-                return i * 100 + 60;
-            })
-            .attr("font-weight", 600)
-            .style("fill", "#1DB954");
-
-            bottom_texts.append("text")
-            .text(function(d) {
-                return "Genre : "+ bottomFiveArtists[d].genre;
-            })
-            .attr("x", 150)
-            .attr("y", function(_, i) {
-                return i * 100 + 60;
-            });
-
-            bottom_texts.append("text")
-            .text(function(d) {
-                return "Nombre d'écoutes : "+bottomFiveArtists[d].occurence;
-            })
-            .attr("x", 350)
-            .attr("y", function(_, i) {
-                return i * 100 + 40;
-            });
-
-            bottom_texts.append("text")
-            .text(function(d) {
-                return "Followers : "+bottomFiveArtists[d].followers;
-            })
-            .attr("x", 350)
-            .attr("y", function(_, i) {
-                return i * 100 + 60;
-            });
+        });
+        }
     });
-});
+
+    artistsList = d3.group(artistsList, (d) => d.artist);
+    artistsList = Array.from(artistsList, ([key, values]) => {
+        if (window.global.fullArtists.get(key)) {
+        return {
+            artist: window.global.fullArtists.get(key)[0],
+            totalTs: d3.sum(values, (d) => d.totalTs),
+        };
+        }
+
+        return {
+        artist: "que dalle et jcomprend pas srx",
+        totalTs: 0,
+        };
+    });
+
+    
+
+    artistsList.sort(function(x, y){
+        return d3.descending(x.totalTs, y.totalTs);
+    })
+
+    artistsList = artistsList.slice(0,10)
+    topFiveArtists = artistsList.slice(0,5)
+    bottomTopFiveArtists = artistsList.slice(5,10)
+
+    // Container for first 5 artists
+    const top_svg = d3.select("#firstfive").append("svg")
+        .attr("width", "100%")
+        .attr("height", topFiveArtists.length * 100);
+
+    // Add images for each artist
+    top_svg.selectAll("image")
+        .data(topFiveArtists)
+        .enter().append("image")
+        .attr("xlink:href", d => d.artist.images[2].url)
+        .attr("width", 80)
+        .attr("height", 80)
+        .attr("x", 50)
+        .attr("y", (d, i) => i * 100 + 10);
+
+
+
+    var top_texts = top_svg.selectAll("text")
+        .data(topFiveArtists)
+        .enter();
+
+        top_texts.append("text")
+        .text((d) => d.artist.name)
+        .attr("x", 150)
+        .attr("y", function(_, i) {
+            return i * 100 + 40;
+        })
+        .attr("font-weight", 600)
+        .style("fill", "#1DB954");
+
+        top_texts.append("text")
+        .text((d, i) => i + 1)
+        .attr("x", 30)
+        .attr("y", function(_, i) {
+            return i * 100 + 60;
+        })
+        .attr("font-weight", 600)
+        .style("fill", "#1DB954");
+
+        top_texts.append("text")
+        .text((d) => d.artist.genres[0])
+        .attr("x", 150)
+        .attr("y", function(_, i) {
+            return i * 100 + 60;
+        });
+
+        top_texts.append("text")
+        .text((d) => "Temps d'écoute : "+(d.totalTs / 3600000).toFixed(2)+"h")
+        .attr("x", 350)
+        .attr("y", function(_, i) {
+            return i * 100 + 40;
+        });
+
+        top_texts.append("text")
+        .text((d) => "Followers : "+d.artist.followers.total)
+        .attr("x", 350)
+        .attr("y", function(_, i) {
+            return i * 100 + 60;
+        });
+
+    const bottom_svg = d3.select("#lastfive").append("svg")
+        .attr("width", "100%")
+        .attr("height", bottomTopFiveArtists.length * 100);
+
+    // Add images for each artist
+    bottom_svg.selectAll("image")
+        .data(bottomTopFiveArtists)
+        .enter().append("image")
+        .attr("xlink:href", d => d.artist.images[2].url)
+        .attr("width", 80)
+        .attr("height", 80)
+        .attr("x", 50)
+        .attr("y", (d, i) => i * 100 + 10);
+
+
+
+    var bottom_texts = bottom_svg.selectAll("text")
+        .data(bottomTopFiveArtists)
+        .enter();
+
+        bottom_texts.append("text")
+        .text((d) => d.artist.name)
+        .attr("x", 150)
+        .attr("y", function(_, i) {
+            return i * 100 + 40;
+        })
+        .attr("font-weight", 600)
+        .style("fill", "#1DB954");
+
+        bottom_texts.append("text")
+        .text((d, i) => i + 6)
+        .attr("x", 30)
+        .attr("y", function(_, i) {
+            return i * 100 + 60;
+        })
+        .attr("font-weight", 600)
+        .style("fill", "#1DB954");
+
+        bottom_texts.append("text")
+        .text((d) => d.artist.genres[0])
+        .attr("x", 150)
+        .attr("y", function(_, i) {
+            return i * 100 + 60;
+        });
+
+        bottom_texts.append("text")
+        .text((d) => "Temps d'écoute : "+(d.totalTs / 3600000).toFixed(2)+"h")
+        .attr("x", 350)
+        .attr("y", function(_, i) {
+            return i * 100 + 40;
+        });
+
+        bottom_texts.append("text")
+        .text((d) => "Followers : "+d.artist.followers.total)
+        .attr("x", 350)
+        .attr("y", function(_, i) {
+            return i * 100 + 60;
+        });
 }

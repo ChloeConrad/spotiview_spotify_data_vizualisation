@@ -1,686 +1,731 @@
 <head>
-    <meta charset="utf-8" />
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="dataManagement.js"></script>
-    <script src="artists.js"></script>
-    <script src="genres.js"></script>
-    <script src="topArtists.js"></script>
+  <meta charset="utf-8" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"
+  ></script>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+    crossorigin="anonymous"
+  />
+  <script src="dataManagement.js"></script>
+  <script src="artists.js"></script>
+  <script src="genres.js"></script>
+  <script src="topArtists.js"></script>
 </head>
 
 <style>
 
-    .dates {
-        font-family: "Verdana";
-        font-size: 3em;
-    }
-    
-    .pie text {
-        font-family: "Verdana";
-        fill: #888;
-    }
+  .dates {
+      font-family: "Verdana";
+      font-size: 3em;
+  }
+
+  .pie text {
+      font-family: "Verdana";
+      fill: #888;
+  }
 
 
 
-    .pie .name-text{
-        font-size: 1.5em;
-    }
+  .pie .name-text{
+      font-size: 1.5em;
+  }
 
-    .pie .value-text{
-        font-size: 3em;
-    }
-    */
+  .pie .value-text{
+      font-size: 3em;
+  }
+  */
 </style>
 
-
 <body>
-    <div class="container">
-        <select id="subject" class="form-select" onchange="selectSubject()">
-            <option selected value="elliot">Elliot</option>
-            <option value="elodie">Elodie</option>
-        </select>
-    </div>
+  <div class="container">
+    <select id="subject" class="form-select" onchange="selectSubject()">
+      <option selected value="elliot">Elliot</option>
+      <option value="elodie">Elodie</option>
+    </select>
+  </div>
 
-    <div class="container">
-        <div id="general_viz" class="row m-0 p-1">
-            <div class=" titre row my-5">
-              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-                  <h2>Les top genres musicaux</h2>
-              </div>
-    
-              <div id="genres" class="col bg-light overflow-auto rounded m-1"> 
-              </div>
-    
-              <div id="genres-details" class="col-2 bg-light overflow-auto rounded m-1">
-              </div>
+  <div class="container">
+    <div id="general_viz" class="row m-0 p-1">
+      <div class="titre row my-5">
+        <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+          <h2>Les top genres musicaux</h2>
+        </div>
+
+        <div id="genres" class="col bg-light overflow-auto rounded m-1"></div>
+
+        <div
+          id="genres-details"
+          class="col-2 bg-light overflow-auto rounded m-1"
+        ></div>
+      </div>
+
+      <div class="row my-5">
+        <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+          <h2>Les 10 artistes les plus écoutés</h2>
+          <div id="firstfive" class="col-md-6"></div>
+          <div id="lastfive" class="col-md-6"></div>
+        </div>
+        <div id="top-artists" class="col bg-light overflow-auto rounded m-1">
+          <div id="firstfive" class="col-md-6"></div>
+          <div id="lastfive" class="col-md-6"></div>
+        </div>
+
+        <div
+          id="top-artists-details"
+          class="col-2 bg-light overflow-auto rounded m-1"
+        ></div>
+      </div>
+
+      <div class="row my-5">
+        <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+          <h2>Les artistes</h2>
+        </div>
+        <div class="col bg-light overflow-auto rounded m-1 p-3">
+          <div class="titre row">
+            <div
+              id="brush"
+              class="col bg-light overflow-auto rounded m-1"
+            ></div>
+            <div class="row justify-content-center dates">&zwnj;</div>
+
+            <div class="row">
+              <div
+                id="artists"
+                class="col bg-light overflow-auto rounded text-center"
+              ></div>
+              <div
+                id="detailedArtists"
+                class="col bg-light overflow-auto rounded"
+              ></div>
             </div>
-    
-            <div class="row my-5">
-              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-                <h2>Les 10 artistes les plus écoutés</h2>
-            <div id="firstfive" class="col-md-6"></div>
-            <div id="lastfive" class="col-md-6"></div>
-              </div>
-              <div id="top-artists" class="col bg-light overflow-auto rounded m-1">
-                <div id="firstfive" class="col-md-6"></div>
-                <div id="lastfive" class="col-md-6"></div>
-              </div>
-
-              <div id="top-artists-details" class="col-2 bg-light overflow-auto rounded m-1">
-              </div>
-            </div>
-    
-            <div class="row my-5">
-              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-                <h2>Les artistes</h2> 
-              </div>
-              <div class="col bg-light overflow-auto rounded m-1 p-3">
-                <div class=" titre row">
-                
-                
-                    <div id="brush" class="col bg-light overflow-auto rounded m-1"> 
-                    </div>
-                    <div class="row justify-content-center dates">
-                        &zwnj;
-                    </div>
-
-                    <div class="row">
-                        <div id="artists" class="col bg-light overflow-auto rounded text-center"> 
-                        </div>
-                        <div id="detailedArtists" class="col bg-light overflow-auto rounded"> 
-                        </div>
-                    </div>
-
-                </div> 
-              </div>
-              </div>
-    
-            <div class="row my-5">
-              <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-                <h2>Les sons</h2>
-              </div>
-    
-              <div id="songs" class="col bg-light overflow-auto rounded m-1 "> 
-              </div>
-    
-              <div id="songs-details" class="col-2 bg-light overflow-auto rounded m-1">
-              </div>
           </div>
-       </div>
+        </div>
+      </div>
+
+      <div class="row my-5">
+        <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
+          <h2>Les sons</h2>
+        </div>
+
+        <div id="songs" class="col bg-light overflow-auto rounded m-1"></div>
+
+        <div
+          id="songs-details"
+          class="col-2 bg-light overflow-auto rounded m-1"
+        ></div>
+      </div>
     </div>
-    <div id="cc" onclick="console.log('CLICK DIVvvv CC')"></div>
+  </div>
 </body>
 
 <script type="module">
+  window.global = {
+    subject: document.getElementById("subject").value,
+    fullHistory: null,
+    fullArtists: null,
+    fullAlbums: null,
+    fullTracks: null,
 
-    window.global = {
-        subject     : document.getElementById("subject").value,
-        fullHistory : null,
-        fullArtists : null,
-        fullAlbums  : null,
-        fullTracks  : null,
+    startTimestampFilter: null,
+    endTimestampFilter: null,
 
-        startTimestampFilter    : null,
-        endTimestampFilter      : null,
-        
-        historyFiltered : null,
-        artistFiltered : null,
-        albumsFiltered : null,
-        fullTracksFiltered  : null,
+    historyFiltered: null,
+    artistFiltered: null,
+    albumsFiltered: null,
+    fullTracksFiltered: null,
 
-        mainArtistSelected: true
-    }
+    mainArtistSelected: true,
+  };
 
+  await loadFullData();
 
-    await loadFullData()
+  window.global.historyFiltered = window.global.fullHistory;
+  window.global.artistFiltered = window.global.fullArtists;
+  window.global.albumsFiltered = window.global.fullAlbums;
+  window.global.fullTracksFiltered = window.global.fullTracks;
 
-    window.global.historyFiltered    = window.global.fullHistory
-    window.global.artistFiltered     = window.global.fullArtists
-    window.global.albumsFiltered     = window.global.fullAlbums
-    window.global.fullTracksFiltered = window.global.fullTracks
+  const groupedHistoryByTracks = d3.group(
+    window.global.fullHistory,
+    (d) => d.trackId
+  );
 
+  const result = Array.from(groupedHistoryByTracks, ([key, values]) => ({
+    artist: key,
+    totalTs: d3.sum(values, (d) => d.ms_played),
+  }));
 
-    const groupedHistoryByTracks = d3.group(window.global.fullHistory, d => d.trackId)
+  const totalMs = d3.sum(result, (d) => d.totalTs);
 
-    const result = Array.from(groupedHistoryByTracks, ([key, values]) => ({
-        artist: key,
-        totalTs: d3.sum(values, d => d.ms_played)
+  result.forEach((d) => {
+    d.totalTs = (d.totalTs * 100) / totalMs;
+  });
+
+  result.sort(function (x, y) {
+    return d3.descending(x.totalTs, y.totalTs);
+  });
+
+  artistsSelector();
+  artistsDetails();
+  brush();
+  genresViz();
+  //topArtistsViz();
+
+  //topArtistsVizTemoin()
+  topArtistsViz()
+
+  d3.select("#selectorMainArtistsPath")
+    .node()
+    .dispatchEvent(new MouseEvent("click"));
+  d3.select("#selectorMainArtistsG")
+    .node()
+    .dispatchEvent(new MouseEvent("click"));
+
+  var select = document.getElementById("subject");
+  select.addEventListener("change", () => {
+    topArtistsViz();
+    genresViz();
+    artists();
+  });
+
+  function artistsDetails() {
+
+    // https://codepen.io/zakariachowdhury/pen/EZeGJy
+
+    const groupedHistoryByTracks = d3.group(
+      window.global.historyFiltered,
+      (d) => d.trackId
+    );
+
+    const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
+      trackId: key,
+      totalTs: d3.sum(values, (d) => d.ms_played),
     }));
 
-    const totalMs = d3.sum(result, d => d.totalTs)
-
-    result.forEach(d=>{
-        d.totalTs = d.totalTs * 100 / totalMs
-    })
-
-    result.sort(function(x, y){
-        return d3.descending(x.totalTs, y.totalTs);
-    })
-
-    artistsSelector()
-    artistsDetails()
-    brush()
-    genresViz()
-    //topArtistsViz()
-
-    d3.select('#selectorMainArtistsPath').node().dispatchEvent(new MouseEvent("click"));
-    d3.select('#selectorMainArtistsG').node().dispatchEvent(new MouseEvent("click"));
-
-    var select = document.getElementById("subject");
-    select.addEventListener('change', () => {
-        topArtistsViz();
-        genresViz();
-        artists();
+    var artistsList = [];
+    tracks.forEach((d) => {
+      // Pour chaque artists présent dans la track
+      if (window.global.fullTracks.get(d.trackId)) {
+        window.global.fullTracks.get(d.trackId)[0].artists.forEach((a) => {
+          artistsList.push({
+            artist: a,
+            totalTs: d.totalTs,
+          });
+        });
+      }
     });
 
-    function artistsDetails() {
+    artistsList = d3.group(artistsList, (d) => d.artist);
+    artistsList = Array.from(artistsList, ([key, values]) => {
+      if (window.global.fullArtists.get(key)) {
+        return {
+          artist: window.global.fullArtists.get(key)[0],
+          totalTs: d3.sum(values, (d) => d.totalTs),
+        };
+      }
 
-        console.log("Artists")
-
-        // https://codepen.io/zakariachowdhury/pen/EZeGJy
-
-        const groupedHistoryByTracks = d3.group(window.global.historyFiltered, d => d.trackId)
-        console.log(groupedHistoryByTracks)
-
-        const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
-            trackId: key,
-            totalTs: d3.sum(values, d => d.ms_played)
-        }));
-
-
-        var artistsList = []
-        tracks.forEach(d=>{
-            // Pour chaque artists présent dans la track
-            if(window.global.fullTracks.get(d.trackId)) {
-                window.global.fullTracks.get(d.trackId)[0].artists.forEach(a => {
-                    artistsList.push({
-                        artist  : a,
-                        totalTs : d.totalTs
-                    })
-                })
-            }
-        })
-
-        artistsList = d3.group(artistsList, d => d.artist)
-        artistsList = Array.from(artistsList, ([key, values]) => {
-
-            if(window.global.fullArtists.get(key)) {
-                return {
-                    artist: window.global.fullArtists.get(key)[0],
-                    totalTs: d3.sum(values, d => d.totalTs)
-                }
-            }
-
-            return {
-                artist: "que dalle et jcomprend pas srx",
-                totalTs: 0
-            }
-        });
-
-        console.log("artist", artistsList)
-
-        const totalMs = d3.sum(artistsList, d => d.totalTs)
+      return {
+        artist: "que dalle et jcomprend pas srx",
+        totalTs: 0,
+      };
+    });
 
 
-        artistsList.forEach(d=>{
-            d.totalTs = d.totalTs * 100 / totalMs
-        })
+    const totalMs = d3.sum(artistsList, (d) => d.totalTs);
 
-        var otherArtists = artistsList.filter(a => a.totalTs < 0.2)
-        var mainArstists = artistsList.filter(a => a.totalTs >= 0.2)
+    artistsList.forEach((d) => {
+      d.totalTs = (d.totalTs * 100) / totalMs;
+    });
 
-        var artistData = null;
+    var otherArtists = artistsList.filter((a) => a.totalTs < 0.2);
+    var mainArstists = artistsList.filter((a) => a.totalTs >= 0.2);
 
-        if(window.global.mainArtistSelected) {
-            artistData = mainArstists
-        } else {
-            artistData = otherArtists
-        }
+    var artistData = null;
 
-        var mainArtistsProportion = d3.sum(mainArstists, d => d.totalTs)
+    if (window.global.mainArtistSelected) {
+      artistData = mainArstists;
+    } else {
+      artistData = otherArtists;
+    }
 
-        var proportions = [
-            {
-                title : "Main Artists",
-                proportion : mainArtistsProportion
-            },
-            {
-                title : "Other Artists",
-                proportion : 100-mainArtistsProportion
-            }
-        ]
+    var mainArtistsProportion = d3.sum(mainArstists, (d) => d.totalTs);
 
+    var proportions = [
+      {
+        title: "Main Artists",
+        proportion: mainArtistsProportion,
+      },
+      {
+        title: "Other Artists",
+        proportion: 100 - mainArtistsProportion,
+      },
+    ];
 
-        /*
+    /*
         artistsList.sort(function(x, y){
             return d3.descending(x.totalTs, y.totalTs);
         })
         */
-        var text = "";
+    var text = "";
 
-        var width = 400;
-        var height = 400;
-        var thickness = 75;
+    var width = 400;
+    var height = 400;
+    var thickness = 75;
 
-        var radius = Math.min(width, height) / 2.1;
-        var color = d3.scaleOrdinal(d3.schemeCategory10);
+    var radius = Math.min(width, height) / 2.1;
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var donutExist = d3.select("#artistDonut").size() > 0;
+
+    if (donutExist) {
+      d3.select("#artistDonut").remove();
+    }
+
+    //--------------------------------DETAIL------------------------------------------------
+
+    var svg = d3
+      .select("#detailedArtists")
+      .append("svg")
+      .attr("id", "artistDonut")
+      .attr("class", "pie")
+      .attr("width", width)
+      .attr("height", height);
+
+    var g = svg
+      .append("g")
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    var arc = d3
+      .arc()
+      .innerRadius(radius - thickness)
+      .outerRadius(radius);
+
+    var pie = d3
+      .pie()
+      .value(function (d) {
+        return d.totalTs;
+      })
+      .sort(null);
+
+    var path = g
+      .selectAll("path")
+      .data(pie(artistData))
+      .enter()
+      .append("g")
+      .on("mouseover", function (d, data) {
+        let g = d3
+          .select(this)
+          .style("cursor", "pointer")
+          .style("fill", "black")
+          .append("g")
+          .attr("class", "text-group");
 
 
-        var donutExist = d3.select('#artistDonut').size() > 0;
+        g.append("text")
+          .attr("class", "name-text")
+          .text(`${data.data.artist.name}`)
+          .attr("text-anchor", "middle")
+          .attr("dy", "-1.2em");
 
-        if(donutExist) {
-            d3.select('#artistDonut').remove()
-        }
+        g.append("text")
+          .attr("class", "value-text")
+          .text(data.value.toFixed(4) + "%")
+          .attr("text-anchor", "middle")
+          .attr("dy", ".6em");
+      })
+      .on("mouseout", function (d) {
+        d3.select(this)
+          .style("cursor", "none")
+          .style("fill", color(this._current))
+          .select(".text-group")
+          .remove();
+      })
+      .append("path")
+      .attr("class", "piePart-detailedArtist")
+      .attr("d", arc)
+      .attr("fill", (d, i) => color(i))
+      .on("mouseover", function (d) {
+        d3.selectAll(".piePart-detailedArtist").style(
+          "filter",
+          "contrast(40%)"
+        );
 
-        //--------------------------------DETAIL------------------------------------------------
+        d3.select(this).style("filter", "contrast(200%)");
+      })
+      .on("mouseout", function (d) {
+        d3.selectAll(".piePart-detailedArtist")
+          .style("filter", "contrast(100%)")
+          .style("fill", (d, i) => {
+            return color(i);
+          });
+      })
+      .each(function (d, i) {
+        this._current = i;
+      });
 
-        var svg = d3.select("#detailedArtists")
-            .append('svg')
-            .attr("id", "artistDonut")
-            .attr('class', 'pie')
-            .attr('width', width)
-            .attr('height', height);
+    g.append("text")
+      .attr("text-anchor", "middle")
+      .attr("dy", ".35em")
+      .text(text);
+  }
 
-        var g = svg.append('g')
-            .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')');
+  function artistsSelector() {
 
-        var arc = d3.arc()
+    // https://codepen.io/zakariachowdhury/pen/EZeGJy
+
+    const groupedHistoryByTracks = d3.group(
+      window.global.historyFiltered,
+      (d) => d.trackId
+    );
+
+    const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
+      trackId: key,
+      totalTs: d3.sum(values, (d) => d.ms_played),
+    }));
+
+    var artistsList = [];
+    tracks.forEach((d) => {
+      // Pour chaque artists présent dans la track
+      if (window.global.fullTracks.get(d.trackId)) {
+        window.global.fullTracks.get(d.trackId)[0].artists.forEach((a) => {
+          artistsList.push({
+            artist: a,
+            totalTs: d.totalTs,
+          });
+        });
+      }
+    });
+
+    artistsList = d3.group(artistsList, (d) => d.artist);
+    artistsList = Array.from(artistsList, ([key, values]) => {
+      if (window.global.fullArtists.get(key)) {
+        return {
+          artist: window.global.fullArtists.get(key)[0],
+          totalTs: d3.sum(values, (d) => d.totalTs),
+        };
+      }
+
+      return {
+        artist: "que dalle et jcomprend pas srx",
+        totalTs: 0,
+      };
+    });
+
+
+    const totalMs = d3.sum(artistsList, (d) => d.totalTs);
+
+    artistsList.forEach((d) => {
+      d.totalTs = (d.totalTs * 100) / totalMs;
+    });
+
+    var otherArtists = artistsList.filter((a) => a.totalTs < 0.2);
+    var mainArstists = artistsList.filter((a) => a.totalTs >= 0.2);
+
+    var mainArtistsProportion = d3.sum(mainArstists, (d) => d.totalTs);
+
+    var proportions = [
+      {
+        title: "Main Artists",
+        proportion: mainArtistsProportion,
+      },
+      {
+        title: "Other Artists",
+        proportion: 100 - mainArtistsProportion,
+      },
+    ];
+
+    /*
+        artistsList.sort(function(x, y){
+            return d3.descending(x.totalTs, y.totalTs);
+        })
+        */
+    var text = "";
+
+    var width = 400;
+    var height = 400;
+    var thickness = 75;
+
+    var radius = Math.min(width, height) / 2.1;
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var donutSelectorExist = d3.select("#artistSelector").size() > 0;
+
+    if (donutSelectorExist) {
+      // https://d3-graph-gallery.com/graph/pie_changeData.html
+
+      //d3.select('#artistSelector').remove()
+
+      svg = d3.select("#artists");
+      var pie = d3
+        .pie()
+        .value(function (d) {
+          return d.proportion;
+        })
+        .sort(null);
+
+      const u = svg
+        .selectAll("path")
+        .data(pie(proportions))
+        .join("path")
+        .transition()
+        .duration(1000)
+        .attr(
+          "d",
+          d3
+            .arc()
             .innerRadius(radius - thickness)
-            .outerRadius(radius);
+            .outerRadius(radius)
+        );
 
-        var pie = d3.pie()
-            .value(function(d) { return d.totalTs; })
-            .sort(null);
+      //https://stackoverflow.com/questions/51011832/d3-transition-to-count-up
+      const t = d3.select("#selectorValueText");
 
-        var path = g.selectAll('path')
-            .data(pie(artistData))
-            .enter()
+      t.transition()
+        .tween("text", () => {
+          var selection = d3.select("#selectorValueText");
+
+          var start = parseFloat(t.text().replace("%", ""));
+
+          if (window.global.mainArtistSelected) {
+            var end = proportions[0].proportion;
+          } else {
+            var end = proportions[1].proportion;
+          }
+
+          var interpolator = d3.interpolateNumber(start, end);
+
+
+          return function (t) {
+            selection.text(interpolator(t).toFixed(2) + "%");
+          }; // return value
+        })
+        .duration(1000);
+    } else {
+      //--------------------------------SELECTOR------------------------------------------------
+      var svg = d3
+        .select("#artists")
+        .append("svg")
+        .attr("id", "artistSelector")
+        .attr("class", "pie")
+        .attr("width", width)
+        .attr("height", height);
+
+      var g = svg
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+      var arc = d3
+        .arc()
+        .innerRadius(radius - thickness)
+        .outerRadius(radius);
+
+      var pie = d3
+        .pie()
+        .value(function (d) {
+          return d.proportion;
+        })
+        .sort(null);
+
+      var path = g
+        .selectAll("path")
+        .data(pie(proportions))
+        .enter()
+        .append("g")
+        .attr("id", (d) => {
+          if (d.data.title === "Main Artists") {
+            return "selectorMainArtistsG";
+          }
+          return "selectorOtherArtistsG";
+        })
+        .on("click", function (d, data) {
+          d3.selectAll(".textMainOthers").remove();
+
+          let g = d3
+            .select(this)
+            .style("cursor", "pointer")
             .append("g")
-            .on("mouseover", function(d,data) {
-                let g = d3.select(this)
-                    .style("cursor", "pointer")
-                    .style("fill", "black")
-                    .append("g")
-                    .attr("class", "text-group");
+            .attr("class", "text-group");
 
-                console.log("ARTIST",data.data.artist,window.global.fullTracks)
+          g.append("text")
+            .attr("class", "name-text textMainOthers")
+            .text(`${data.data.title}`)
+            .attr("text-anchor", "middle")
+            .attr("dy", "-1.2em");
 
-                g.append("text")
-                    .attr("class", "name-text")
-                    .text(`${data.data.artist.name}`)
-                    .attr('text-anchor', 'middle')
-                    .attr('dy', '-1.2em');
-            
-                g.append("text")
-                    .attr("class", "value-text")
-                    .text(data.value.toFixed(4)+"%")
-                    .attr('text-anchor', 'middle')
-                    .attr('dy', '.6em');
-                })
-            .on("mouseout", function(d) {
-                d3.select(this)
-                    .style("cursor", "none")  
-                    .style("fill", color(this._current))
-                    .select(".text-group").remove();
-                })
-            .append('path')
-            .attr("class", "piePart-detailedArtist")
-            .attr('d', arc)
-            .attr('fill', (d,i) => color(i))
-            .on("mouseover", function(d) {
-                d3.selectAll(".piePart-detailedArtist")     
-                    .style("filter", "contrast(40%)")
-
-                d3.select(this)
-                    .style("filter", "contrast(200%)")        
-            })
-            .on("mouseout", function(d) {
-                console.log("tt")
-                d3.selectAll(".piePart-detailedArtist")
-                    .style("filter", "contrast(100%)")
-                    .style('fill', (d,i) => {
-                        return color(i)
-                    })
-                })
-            .each(function(d, i) { this._current = i; });
-
-        g.append('text')
-            .attr('text-anchor', 'middle')
-            .attr('dy', '.35em')
-            .text(text);
-        }
-
-    function artistsSelector() {
-
-        console.log("SELECTOR")
-
-        // https://codepen.io/zakariachowdhury/pen/EZeGJy
-
-        const groupedHistoryByTracks = d3.group(window.global.historyFiltered, d => d.trackId)
-        console.log(groupedHistoryByTracks)
-
-        const tracks = Array.from(groupedHistoryByTracks, ([key, values]) => ({
-            trackId: key,
-            totalTs: d3.sum(values, d => d.ms_played)
-        }));
-
-
-        var artistsList = []
-        tracks.forEach(d=>{
-            // Pour chaque artists présent dans la track
-            if(window.global.fullTracks.get(d.trackId)) {
-                window.global.fullTracks.get(d.trackId)[0].artists.forEach(a => {
-                    artistsList.push({
-                        artist  : a,
-                        totalTs : d.totalTs
-                    })
-                })
-            }
+          g.append("text")
+            .attr("class", "value-text textMainOthers")
+            .attr("id", "selectorValueText")
+            .text(data.data.proportion.toFixed(2) + "%")
+            .attr("text-anchor", "middle")
+            .attr("dy", ".6em");
         })
+        .append("path")
+        .attr("class", "piePart")
+        .attr("d", arc)
+        .attr("fill", (d, i) => color(i))
+        .attr("id", (d) => {
+          if (d.data.title === "Main Artists") {
+            return "selectorMainArtistsPath";
+          }
+          return "selectorOtherArtistsPath";
+        })
+        .on("click", function (d, data) {
 
-        artistsList = d3.group(artistsList, d => d.artist)
-        artistsList = Array.from(artistsList, ([key, values]) => {
+          d3.selectAll(".piePart").style("filter", "contrast(40%)");
 
-            if(window.global.fullArtists.get(key)) {
-                return {
-                    artist: window.global.fullArtists.get(key)[0],
-                    totalTs: d3.sum(values, d => d.totalTs)
-                }
-            }
+          d3.select(this).style("filter", "contrast(200%)");
 
-            return {
-                artist: "que dalle et jcomprend pas srx",
-                totalTs: 0
-            }
+          if (data.data.title === "Main Artists") {
+            window.global.mainArtistSelected = true;
+          } else {
+            window.global.mainArtistSelected = false;
+          }
+
+          artistsDetails();
+        })
+        .each(function (d, i) {
+          this._current = i;
         });
 
-        console.log("artist", artistsList)
 
-        const totalMs = d3.sum(artistsList, d => d.totalTs)
-
-
-        artistsList.forEach(d=>{
-            d.totalTs = d.totalTs * 100 / totalMs
-        })
-
-        var otherArtists = artistsList.filter(a => a.totalTs < 0.2)
-        var mainArstists = artistsList.filter(a => a.totalTs >= 0.2)
-
-        var mainArtistsProportion = d3.sum(mainArstists, d => d.totalTs)
-
-        var proportions = [
-            {
-                title : "Main Artists",
-                proportion : mainArtistsProportion
-            },
-            {
-                title : "Other Artists",
-                proportion : 100-mainArtistsProportion
-            }
-        ]
+      g.append("text")
+        .attr("text-anchor", "middle")
+        .attr("dy", ".35em")
+        .text(text);
 
 
-        /*
-        artistsList.sort(function(x, y){
-            return d3.descending(x.totalTs, y.totalTs);
-        })
-        */
-        var text = "";
+      //document.getElementById("cc").click();
 
-        var width = 400;
-        var height = 400;
-        var thickness = 75;
+      //document.getElementById("selectorMainArtistsPath").click();
+    }
+  }
 
-        var radius = Math.min(width, height) / 2.1;
-        var color = d3.scaleOrdinal(d3.schemeCategory10);
+  function brush() {
+    const groupByDay = d3.groups(window.global.fullHistory, (d) => {
+      return new Date(d.ts.toDateString());
+    });
 
+    groupByDay.forEach((day) => {
+      const [i, historyOfDay] = day;
+      day.msPlayedTotal = d3.sum(historyOfDay, (d) => d.ms_played);
+    });
 
-        var donutSelectorExist = d3.select('#artistSelector').size() > 0;
+    const width = 300;
+    const height = 30;
 
-        if(donutSelectorExist) {
-            // https://d3-graph-gallery.com/graph/pie_changeData.html
+    const space = 8;
 
-            console.log("REMOVED SELECTOR")
-            //d3.select('#artistSelector').remove()
+    const rangeSvg = d3
+      .select("#brush")
+      .append("svg")
+      .attr("id", "rangesvg")
+      .attr("viewBox", [0, 0, width, height]);
+    //.style("background-color", "silver")
 
-            svg = d3.select("#artists")
-            var pie = d3.pie()
-            .value(function(d) { return d.proportion })
-            .sort(null);
+    const timeScale = d3.scaleTime(
+      [d3.min(groupByDay, (h) => h[0]), d3.max(groupByDay, (h) => h[0])],
+      [0, width]
+    );
+    const timeListenningScale = d3.scaleTime(
+      [
+        d3.min(groupByDay, (h) => h.msPlayedTotal),
+        d3.max(groupByDay, (h) => h.msPlayedTotal),
+      ],
+      [0, height - space]
+    );
 
-            const u = svg.selectAll("path")
-                .data(pie(proportions))
-                .join("path")
-                .transition()
-                .duration(1000)
-                .attr('d', d3.arc()
-                    .innerRadius(radius - thickness)
-                    .outerRadius(radius)
-                )
+    rangeSvg
+      .append("g")
+      .selectAll("rect")
+      .data(groupByDay)
+      .enter()
+      .append("rect")
+      .attr("x", (d, i) => timeScale(d[0]) - (width * 0.5) / groupByDay.length)
+      .attr("y", (d, i) => {
+        return height - space - timeListenningScale(d.msPlayedTotal);
+      })
+      .attr("width", width / groupByDay.length)
+      .attr("height", (d) => timeListenningScale(d.msPlayedTotal));
 
-            //https://stackoverflow.com/questions/51011832/d3-transition-to-count-up
-            const t = d3.select("#selectorValueText")
-
-            t.transition()
-                .tween("text", () => {
-                    var selection = d3.select("#selectorValueText")
-
-                    var start = parseFloat(t.text().replace("%",""))
-
-                    if(window.global.mainArtistSelected) {
-                        var end = proportions[0].proportion
-                    } else {
-                        var end = proportions[1].proportion
-                    }
-
-                    
-                                        
-                    var interpolator = d3.interpolateNumber(start,end); 
-
-                    console.log(interpolator(t))
-
-                    return function(t) { selection.text(interpolator(t).toFixed(2)+"%"); };  // return value
-     
-                })
-                .duration(1000)
-
+    const bottomAxis = d3
+      .axisBottom(timeScale)
+      .ticks(d3.timeMonth.every(1))
+      .tickSize(2)
+      .tickFormat(function (date) {
+        if (d3.timeYear(date).getMonth() < date.getMonth()) {
+          return d3.timeFormat("%b")(date);
         } else {
-            //--------------------------------SELECTOR------------------------------------------------
-            var svg = d3.select("#artists")
-                .append('svg')
-                .attr("id", "artistSelector")
-                .attr('class', 'pie')
-                .attr('width', width)
-                .attr('height', height);
-
-            var g = svg.append('g')
-                .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')');
-
-            var arc = d3.arc()
-                .innerRadius(radius - thickness)
-                .outerRadius(radius);
-
-            var pie = d3.pie()
-                .value(function(d) { return d.proportion })
-                .sort(null);
-
-            var path = g.selectAll('path')
-                .data(pie(proportions))
-                .enter()
-                .append("g")
-                .attr("id", (d) => {
-                    if(d.data.title === "Main Artists") {
-                        console.log("machin")
-                        return "selectorMainArtistsG"
-                        
-                    }
-                    return "selectorOtherArtistsG"
-                })
-                .on("click", function(d,data) {
-                    d3.selectAll(".textMainOthers").remove()
-                    
-                    let g = d3.select(this)
-                        .style("cursor", "pointer")
-                        .append("g")
-                        .attr("class", "text-group");
-
-                    g.append("text")
-                        .attr("class", "name-text textMainOthers")
-                        .text(`${data.data.title}`)
-                        .attr('text-anchor', 'middle')
-                        .attr('dy', '-1.2em');
-                
-                    g.append("text")
-                        .attr("class", "value-text textMainOthers")
-                        .attr("id", "selectorValueText")
-                        .text(data.data.proportion.toFixed(2)+"%")
-                        .attr('text-anchor', 'middle')
-                        .attr('dy', '.6em');
-                    })
-                .append('path')
-                .attr("class", "piePart")
-                .attr('d', arc)
-                .attr('fill', (d,i) => color(i))
-                .attr("id", (d) => {
-                    if(d.data.title === "Main Artists") {
-                        return "selectorMainArtistsPath"
-                    }
-                    return "selectorOtherArtistsPath"
-                })
-                .on("click", function(d, data) {
-
-                    console.log("AHA")
-
-                    d3.selectAll(".piePart")     
-                        .style("filter", "contrast(40%)")
-
-                    d3.select(this)
-                        .style("filter", "contrast(200%)")
-
-                    if(data.data.title === "Main Artists") {
-                        window.global.mainArtistSelected = true
-                    } else {
-                        window.global.mainArtistSelected = false
-                    }
-
-                    artistsDetails()
-                    
-                })
-                .each(function(d, i) { this._current = i; });
-
-            console.log("PATH", path)
-
-            g.append('text')
-                .attr('text-anchor', 'middle')
-                .attr('dy', '.35em')
-                .text(text);
-
-            console.log("CC", d3.select('#selectorMainArtistsPath'))
-
-            //document.getElementById("cc").click();
-
-            //document.getElementById("selectorMainArtistsPath").click();
+          return d3.timeFormat("%Y")(date);
         }
+      });
+
+    const brush = d3
+      .brushX()
+      .extent([
+        [0, 0],
+        [width, height],
+      ])
+      .on("end", (e) => {
+        window.global.startTimestampFilter = timeScale.invert(e.selection[0]);
+        window.global.endTimestampFilter = timeScale.invert(e.selection[1]);
+        updateAll();
+      });
+
+    rangeSvg.append("g").call(brush);
+
+    rangeSvg
+      .append("g")
+      .call(bottomAxis)
+      .attr(
+        "transform",
+        "translate(0," +
+          timeListenningScale(d3.max(groupByDay, (h) => h.msPlayedTotal)) +
+          ")"
+      )
+      .style("font-size", 3);
+  }
+
+  function updateAll() {
+
+    // Reset
+    window.global.historyFiltered = window.global.fullHistory;
+
+
+    const startTimestampFilter = window.global.startTimestampFilter;
+    const endTimestampFilter = window.global.endTimestampFilter;
+
+    // Filter history with the selected range
+    if (!(startTimestampFilter === null || startTimestampFilter === null)) {
+      window.global.historyFiltered = window.global.historyFiltered.filter(
+        (h) => h.ts >= startTimestampFilter && h.ts <= endTimestampFilter
+      );
+
+      var tmp1 = startTimestampFilter.toISOString().slice(0, 10).split("-");
+      var tmp2 = endTimestampFilter.toISOString().slice(0, 10).split("-");
+
+      d3.select(".dates").text(
+        tmp1[2] +
+          "/" +
+          tmp1[1] +
+          "/" +
+          tmp1[0] +
+          " - " +
+          tmp2[2] +
+          "/" +
+          tmp2[1] +
+          "/" +
+          tmp2[0]
+      );
     }
 
-    function brush() {
-        const groupByDay = d3.groups(window.global.fullHistory, (d) => {
-            return new Date(d.ts.toDateString())
-        })
-
-        groupByDay.forEach(day => {
-            const [i, historyOfDay] = day;
-            day.msPlayedTotal = d3.sum(historyOfDay, d => d.ms_played);
-        });
-
-        const width = 300
-        const height = 30
-
-        const space = 8
-
-        const rangeSvg =  d3.select("#brush")
-            .append("svg")
-            .attr("id", "rangesvg")
-            .attr("viewBox", [0, 0, width, height])
-            //.style("background-color", "silver")
-
-        const timeScale = d3.scaleTime([d3.min(groupByDay, h => h[0]), d3.max(groupByDay, h => h[0])],[0,width])
-        const timeListenningScale = d3.scaleTime([d3.min(groupByDay, h => h.msPlayedTotal), d3.max(groupByDay, h => h.msPlayedTotal)],[0,height - space])
-
-        rangeSvg.append("g")
-            .selectAll("rect")
-            .data(groupByDay)
-            .enter()
-            .append("rect")
-            .attr("x", (d, i) => timeScale(d[0]) - width * 0.5 / groupByDay.length)
-            .attr("y", (d, i) =>{
-                return height-space-timeListenningScale(d.msPlayedTotal)
-            })
-            .attr("width", width / groupByDay.length)
-            .attr("height", (d) => timeListenningScale(d.msPlayedTotal))
-
-        
-
-        const bottomAxis =  d3.axisBottom(timeScale)
-                                .ticks(d3.timeMonth.every(1))
-                                .tickSize(2)
-                                .tickFormat(function(date){
-                                if (d3.timeYear(date).getMonth() < date.getMonth()) {
-                                    return d3.timeFormat('%b')(date);
-                                } else {
-                                    return d3.timeFormat('%Y')(date);
-                                }
-                            });
-
-        const brush = d3.brushX()
-            .extent([[0, 0], [width, height]])
-            .on("end", (e) => {
-                window.global.startTimestampFilter = timeScale.invert(e.selection[0])
-                window.global.endTimestampFilter = timeScale.invert(e.selection[1])
-                updateAll()
-            })
-
-        rangeSvg.append("g")
-            .call(brush)
-
-        rangeSvg.append("g")
-                .call(bottomAxis)
-                .attr("transform", "translate(0," + (timeListenningScale(d3.max(groupByDay, h => h.msPlayedTotal)))+")")
-                .style("font-size",3);
-    }
-
-    function updateAll() {
-        console.log("UPDATE")
-
-
-        // Reset
-        window.global.historyFiltered = window.global.fullHistory
-
-        console.log("Avant",window.global.historyFiltered.length)
-
-        const startTimestampFilter = window.global.startTimestampFilter
-        const endTimestampFilter = window.global.endTimestampFilter
-
-        // Filter history with the selected range
-        if( !(startTimestampFilter === null || startTimestampFilter === null) ) {
-            window.global.historyFiltered = window.global.historyFiltered.filter( h => h.ts >= startTimestampFilter && h.ts <= endTimestampFilter)
-            
-            var tmp1 = startTimestampFilter.toISOString().slice(0,10).split("-");
-            var tmp2 = endTimestampFilter.toISOString().slice(0,10).split("-");
-
-
-
-            d3.select(".dates")
-                .text(tmp1[2]+"/"+tmp1[1]+"/"+tmp1[0]+" - "+tmp2[2]+"/"+tmp2[1]+"/"+tmp2[0])
-        }
-
-        // Updates all views
-
-        
-        artistsSelector()
-        artistsDetails()
-        
-    }
-
+    // Updates all views
+    artistsSelector();
+    artistsDetails();
+    topArtistsViz()
+  }
 </script>
