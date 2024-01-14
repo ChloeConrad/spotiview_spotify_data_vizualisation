@@ -131,7 +131,8 @@ function plotHist(dataGenres,divName,artists){
                 maDiv.innerHTML = "<strong> Genre : </strong> <br>" + i[0];
                 maDiv.innerHTML += "<br><br> <strong> Heure d'écoutes : </strong> <br>" + (i[1] / 3600000).toFixed(2)+"h"
                 maDiv.innerHTML += "<br><br> <strong> Top 3 artistes : </strong><ul>";
-
+                d3.selectAll(".elemHistGenre").style("filter", "contrast(30%)");
+                d3.select(this).style("filter", "contrast(120%)");
                 topArtists.forEach(element => {
                     if (element !== undefined) {
                         maDiv.innerHTML += "<li>" + element+"</li>";
@@ -142,6 +143,7 @@ function plotHist(dataGenres,divName,artists){
             .on('mouseout', function (d,i) {
                 var maDiv = document.getElementById("genres-details");
                 maDiv.innerHTML = "";
-                
+                d3.selectAll(".elemHistGenre").style("filter", "contrast(100%)");
+
   });          
 }
