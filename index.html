@@ -217,6 +217,7 @@
   var select = document.getElementById("subject");
   select.addEventListener("change", async () => {
     await selectSubject()
+    brush()
     updateAll()
   });
 
