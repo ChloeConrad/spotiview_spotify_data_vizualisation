@@ -823,7 +823,7 @@
 
     const bottomAxis = d3
       .axisBottom(timeScale)
-      .ticks(d3.timeMonth.every(1))
+      .ticks(d3.timeMonth.every(2))
       .tickSize(2)
       .tickFormat(function (date) {
         if (d3.timeYear(date).getMonth() < date.getMonth()) {
@@ -857,6 +857,12 @@
           ")"
       )
       .style("font-size", 3);
+
+      rangeSvg
+      .selectAll("text")
+      .style("font-weight", function (d) {
+            return (JSON.stringify(d).includes("-12-") ) ? "bold" : "normal";
+        });
   }
 
   function updateAll() {
