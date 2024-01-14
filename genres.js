@@ -98,7 +98,7 @@ function genresViz() {
 
 function plotHist(dataGenres,divName,artists){
     document.getElementById(divName).innerHTML = "";
-    const w = Object.keys(dataGenres).length*6;
+    const w = Object.keys(dataGenres).length*7;
     const h = 250;
     const yScale = d3.scaleLog()
             .domain([d3.min(Object.entries(dataGenres), d => +d[1]), d3.max(Object.entries(dataGenres), d => +d[1])])
