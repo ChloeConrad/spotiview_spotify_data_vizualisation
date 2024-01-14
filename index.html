@@ -73,10 +73,14 @@
       </div>
 
       <div class="row my-5">
+
         <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
           <h2>Les 10 artistes les plus écoutés</h2>
+          </div>
+          <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
           <div id="firstfive" class="col-md-6"></div>
           <div id="lastfive" class="col-md-6"></div>
+          </div>
         </div>
         <div id="top-artists" class="col bg-light overflow-auto rounded m-1">
           <div id="firstfive" class="col-md-6"></div>
@@ -568,11 +572,11 @@
 
     var proportions = [
       {
-        title: "Main Artists",
+        title: "Top artistes",
         proportion: mainArtistsProportion,
       },
       {
-        title: "Other Artists",
+        title: "Autres artistes",
         proportion: 100 - mainArtistsProportion,
       },
     ];
@@ -746,11 +750,11 @@
 
     var proportions = [
       {
-        title: "Main Artists",
+        title: "Top artistes",
         proportion: mainArtistsProportion,
       },
       {
-        title: "Other Artists",
+        title: "Autres artistes",
         proportion: 100 - mainArtistsProportion,
       },
     ];
@@ -854,7 +858,7 @@
         .enter()
         .append("g")
         .attr("id", (d) => {
-          if (d.data.title === "Main Artists") {
+          if (d.data.title === "Top artistes") {
             return "selectorMainArtistsG";
           }
           return "selectorOtherArtistsG";
@@ -888,7 +892,7 @@
         .attr("fill", (d, i) => i % 2 === 0 ? "#1DB954" : "#000000")  
 
         .attr("id", (d) => {
-          if (d.data.title === "Main Artists") {
+          if (d.data.title === "Top artistes") {
             return "selectorMainArtistsPath";
           }
           return "selectorOtherArtistsPath";
@@ -898,7 +902,7 @@
           d3.selectAll(".piePart").attr("fill","#000000")
           d3.select(this).attr("fill","#1DB954")
 
-          if (data.data.title === "Main Artists") {
+          if (data.data.title === "Top artistes") {
             window.global.mainArtistSelected = true;
           } else {
             window.global.mainArtistSelected = false;
@@ -924,6 +928,10 @@
   }
 
   function brush() {
+
+    if(document.getElementById("rangesvg") !== null){
+      d3.select('#rangesvg').remove()
+    }
     const groupByDay = d3.groups(window.global.fullHistory, (d) => {
       return new Date(d.ts.toDateString());
     });
@@ -1048,6 +1056,7 @@
     artistsDetails();
     topArtistsViz()
     genresViz()
+    brush()
   }
 
   function movingAverage(arr, interval) {
