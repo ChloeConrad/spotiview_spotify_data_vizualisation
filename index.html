@@ -765,6 +765,10 @@
   }
 
   function brush() {
+
+    if(document.getElementById("rangesvg") !== null){
+      d3.select('#rangesvg').remove()
+    }
     const groupByDay = d3.groups(window.global.fullHistory, (d) => {
       return new Date(d.ts.toDateString());
     });
@@ -889,6 +893,7 @@
     artistsDetails();
     topArtistsViz()
     genresViz()
+    brush()
   }
 
   function movingAverage(arr, interval) {
