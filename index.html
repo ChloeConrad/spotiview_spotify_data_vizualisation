@@ -112,11 +112,13 @@
           <h2>Les sons</h2>
         </div>
 
+        <!--
         <div id="songs" class="col bg-light overflow-auto rounded m-1"></div>
+        -->
 
         <div
           id="songs-details"
-          class="col-2 bg-light overflow-auto rounded m-1"
+          class="bg-light overflow-auto rounded m-1"
         ></div>
       </div>
 
@@ -125,10 +127,9 @@
           <h2>Les sons</h2>
         </div>
 
-        <div id="songs" class="col bg-light overflow-auto rounded m-1"></div>
+        <div  class="col bg-light overflow-auto rounded m-1"></div>
 
         <div
-          id="songs-details"
           class="col-2 bg-light overflow-auto rounded m-1"
         ></div>
       </div>
@@ -162,6 +163,9 @@
   window.global.albumsFiltered = window.global.fullAlbums;
   window.global.fullTracksFiltered = window.global.fullTracks;
 
+  window.global.startTimestampFilter = d3.min(window.global.historyFiltered, x => x.ts)
+  window.global.endTimestampFilter = d3.max(window.global.historyFiltered, x => x.ts)
+
   const groupedHistoryByTracks = d3.group(
     window.global.fullHistory,
     (d) => d.trackId
@@ -187,6 +191,7 @@
   brush();
   genresViz();
   topArtistsViz()
+  tracks()
 
   d3.select("#selectorMainArtistsPath")
     .node()
@@ -200,6 +205,141 @@
     await selectSubject()
     updateAll()
   });
+
+  function tracks() {
+
+    console.log(window.global.startTimestampFilter)
+    console.log(window.global.endTimestampFilter)
+
+    var h = window.global.historyFiltered
+
+    const format = d3.utcFormat("%d-%m-%Y");
+    const parseTime = d3.utcParse("%d-%m-%Y");
+
+    h.forEach(d => {
+      d.ts = parseTime(format(d.ts))
+    });
+
+    h = d3.group(h, d => d.trackId, d => d.ts)
+
+    var dateRange = d3.timeDays(window.global.startTimestampFilter, window.global.endTimestampFilter)
+    dateRange = dateRange.map( d => parseTime(format(d)))
+
+    var tmp = []
+    // Pour chaque track
+    h.forEach((value, key) => {
+      var s = []
+      dateRange.forEach((date) => {
+        if(value.has(date)) {
+          s.push(value.get(date))
+        }else {
+          s.push([])
+        }
+      })
+      tmp.push({
+        trackId: key,
+        series: s,
+        mean: null
+      })
+    })
+
+    h = tmp
+
+    h.forEach( (t) => {
+      t.series = t.series.map( s => {
+        if(s.length === 0){
+          return 0
+        } else {
+          return d3.sum(s, s=>s.ms_played)
+        }
+      })
+    })
+
+
+    console.log(h)
+
+    var interval = 29
+    var intervalTruc = interval - (interval-1)/2 
+    
+    dateRange = dateRange.slice(intervalTruc-1, dateRange.length-intervalTruc+2)
+
+    h.map( x => {
+      x.mean = d3.mean(x.series)
+      x.series = movingAverage(x.series, interval)
+    })
+
+    h.sort(function(x, y){
+      return d3.descending(x.mean, y.mean);
+    })
+
+    var data = {
+      mean: h.map(x => x.trackId),
+      mean: h.map(x => x.mean),
+      series: h.map(x => x.series),
+      dates: dateRange
+    }
+
+    console.log(data)
+
+    var height = 500
+    var width = 800
+
+    var margin = ({top: 20, right: 20, bottom: 30, left: 30})
+
+    var x = d3.scaleUtc()
+      .domain(d3.extent(dateRange))
+      .range([margin.left, width - margin.right])
+
+    var y = d3.scaleLinear()
+      .domain([0, d3.max(data.series, d => d3.max(d))]).nice()
+      .range([height - margin.bottom, margin.top])
+
+    var line = d3.line() // trace une ligne
+            .defined(d => !isNaN(d)) // on supprime les valeurs manquantes
+            .x((d, i) => x(data.dates[i])) // renvoie la date à l'instant i
+            .y(d => y(d)) // renvoie les taux de chômages
+
+    var xAxis = g => g
+      .attr("transform", `translate(0,${height - margin.bottom})`) // on déplace l'axe en bas du graphe
+      .call(d3.axisBottom(x).ticks(width / 40).tickSizeOuter(0)) // ticks permet de spécifier le nombre de graduation 
+                                                       //tickSizeOuter(0) supprime les bordures verticales sur l'axe
+
+
+    var yAxis = g => g
+      .attr("transform", `translate(${margin.left},0)`) // on déplace l'axe à gauche
+      .call(d3.axisLeft(y)) // axe de gauche avec les valeurs de y()
+      .call(g => g.select(".domain").remove())
+      .call(g => g.select(".tick:last-of-type text").clone() // on définit le type de texte à afficher, le style...
+          .attr("x", 3)
+          .attr("text-anchor", "start")
+          .attr("font-weight", "bold")
+          .text(data.y))
+
+    const svg = d3.select("#songs-details")
+                  .append("svg")
+                  .attr("viewBox", [0, 0, 800, 500]) // dimensions
+                  .style("overflow", "visible");
+
+    svg.append("g")
+      .call(xAxis);
+    svg.append("g")
+      .call(yAxis);
+
+    const path = svg.append("g")
+                    .attr("fill", "none") // on laisse l'arrière-plan vide
+                    .attr ('stroke', d3.rgb(0, 0, 0))
+                    .attr("stroke-width", 1.5)  // taille de la ligne
+                    .attr("stroke-linecap", "round") //type de ligne
+                    .selectAll("path")
+                    .data(data.series.slice(0,100))
+                    .join("path")
+                    .style("mix-blend-mode", "multiply") // option de style
+                    .attr("d", d => line(d)); // trace la valeur du taux de chômage (values) associée à un lieu (y) à la date i (x)
+
+
+  }
+
+  
 
   function artistsDetails() {
 
@@ -737,4 +877,20 @@
     topArtistsViz()
     genresViz()
   }
+
+  function movingAverage(arr, interval) {
+    let index = interval - 1;
+    const length = arr.length + 1;
+    let results = [];
+
+    while (index < length) {
+      index = index + 1;
+      const intervalSlice = arr.slice(index - interval, index);
+      const sum = intervalSlice.reduce((prev, curr) => prev + curr, 0);
+      results.push(sum / interval);
+    }
+
+    return results;
+  }
+
 </script>
