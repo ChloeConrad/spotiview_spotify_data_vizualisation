@@ -160,6 +160,12 @@
     fullTracksFiltered: null,
 
     mainArtistSelected: true,
+
+    tracksX: null,
+    tracksY: null,
+    tracksData: null,
+    trackColorScale: null,
+
   };
 
   await loadFullData();
@@ -197,26 +203,25 @@
   brush();
   genresViz();
   topArtistsViz()
-  //tracks()
+  tracks()
 
-  d3.select("#selectorMainArtistsPath")
+  setTimeout(function() {
+    d3.select("#selectorMainArtistsPath")
     .node()
     .dispatchEvent(new MouseEvent("click"));
   d3.select("#selectorMainArtistsG")
     .node()
     .dispatchEvent(new MouseEvent("click"));
+  }, 10);
 
   var select = document.getElementById("subject");
   select.addEventListener("change", async () => {
     await selectSubject()
+    brush()
     updateAll()
   });
 
   function tracks() {
-
-    console.log(window.global.startTimestampFilter)
-    console.log(window.global.endTimestampFilter)
-
     var h = window.global.historyFiltered
 
     const format = d3.utcFormat("%d-%m-%Y");
@@ -261,9 +266,6 @@
       })
     })
 
-
-    console.log(h)
-
     var interval = 29
     var intervalTruc = interval - (interval-1)/2 
     
@@ -271,21 +273,35 @@
 
     h.map( x => {
       x.mean = d3.mean(x.series)
-      x.series = movingAverage(x.series, interval)
+      x.series = movingAverage(x.series, interval).map(x => x/3600)
     })
 
-    h.sort(function(x, y){
+
+    var sortedH = [...h].sort(function(x, y){
       return d3.descending(x.mean, y.mean);
     })
 
+    sortedH = sortedH.slice(0,200).map(d => d.trackId)
+    
+
+    h = h.filter( x => sortedH.includes(x.trackId))
+
+
     var data = {
-      mean: h.map(x => x.trackId),
-      mean: h.map(x => x.mean),
-      series: h.map(x => x.series),
+      tracks: h.map(x => x.trackId),
+      series: h.map(x => {
+        return {
+          values: x.series,
+          trackId: x.trackId,
+          mean: x.mean
+        }
+      }),
       dates: dateRange
     }
 
-    console.log(data)
+
+    window.global.tracksData = data
+
 
     // https://observablehq.com/@mguiv/construire-un-graphique-pas-a-pas-avec-d3-js
 
@@ -294,37 +310,42 @@
 
     var margin = ({top: 20, right: 20, bottom: 30, left: 30})
 
-    var x = d3.scaleUtc()
+    window.global.tracksX = d3.scaleUtc()
       .domain(d3.extent(dateRange))
       .range([margin.left, width - margin.right])
 
-    var y = d3.scaleLinear()
-      .domain([0, d3.max(data.series, d => d3.max(d))]).nice()
+    window.global.tracksY = d3.scaleLinear()
+      .domain([0, d3.max(data.series, d => d3.max(d.values))]).nice()
       .range([height - margin.bottom, margin.top])
 
     var line = d3.line() // trace une ligne
             .defined(d => !isNaN(d)) // on supprime les valeurs manquantes
-            .x((d, i) => x(data.dates[i])) // renvoie la date à l'instant i
-            .y(d => y(d)) // renvoie les taux de chômages
+            .x((d, i) => window.global.tracksX(data.dates[i])) // renvoie la date à l'instant i
+            .y(d => window.global.tracksY(d)) // renvoie les taux de chômages
 
     var xAxis = g => g
       .attr("transform", `translate(0,${height - margin.bottom})`) // on déplace l'axe en bas du graphe
-      .call(d3.axisBottom(x).ticks(width / 40).tickSizeOuter(0)) // ticks permet de spécifier le nombre de graduation 
+      .call(d3.axisBottom(window.global.tracksX).ticks(width / 40).tickSizeOuter(0)) // ticks permet de spécifier le nombre de graduation 
                                                        //tickSizeOuter(0) supprime les bordures verticales sur l'axe
 
 
     var yAxis = g => g
       .attr("transform", `translate(${margin.left},0)`) // on déplace l'axe à gauche
-      .call(d3.axisLeft(y)) // axe de gauche avec les valeurs de y()
-      .call(g => g.select(".domain").remove())
+      .call(d3.axisLeft(window.global.tracksY)) // axe de gauche avec les valeurs de y()
+      //.call(g => g.select(".domain").remove())
       .call(g => g.select(".tick:last-of-type text").clone() // on définit le type de texte à afficher, le style...
           .attr("x", 3)
           .attr("text-anchor", "start")
           .attr("font-weight", "bold")
-          .text(data.y))
+          .text(() => {
+            return "Temps d'écoute moyen (moyenne glissante) en minutes"
+          }))
+
+    d3.select("#tracksSvg").remove()
 
     const svg = d3.select("#songs-details")
                   .append("svg")
+                  .attr("id", "tracksSvg")
                   .attr("viewBox", [0, 0, 800, 500]) // dimensions
                   .style("overflow", "visible");
 
@@ -333,21 +354,230 @@
     svg.append("g")
       .call(yAxis);
 
+    console.log("data", data)
+
+    
+    window.global.trackColorScale = d3.scaleSequential().domain([d3.max(data.series, x => x.mean),d3.min(data.series, x => x.mean)])
+      .interpolator(d3.interpolateSpectral);
+    
+
     const path = svg.append("g")
                     .attr("fill", "none") // on laisse l'arrière-plan vide
-                    .attr ('stroke', d3.rgb(0, 0, 0))
                     .attr("stroke-width", 1.5)  // taille de la ligne
                     .attr("stroke-linecap", "round") //type de ligne
                     .selectAll("path")
-                    .data(data.series.slice(0,100))
+                    .data(data.series)
                     .join("path")
+                    .attr ('stroke', d=>window.global.trackColorScale(d.mean))
                     .style("mix-blend-mode", "multiply") // option de style
-                    .attr("d", d => line(d)); // trace la valeur du taux de chômage (values) associée à un lieu (y) à la date i (x)
+                    .attr("d", d => line(d.values)); // trace la valeur du taux de chômage (values) associée à un lieu (y) à la date i (x)
 
-
+    svg.call(hoverTracks, path); // on passe path en argument pour la fonction hover
   }
 
+  function hoverTracks(svg, path) {
   
+    if ("ontouchstart" in document) svg
+        .style("-webkit-tap-highlight-color", "transparent")
+        .on("touchmove", moved)
+        .on("touchstart", entered)
+        .on("touchend", left)
+    else svg
+        .on("mousemove", moved)
+        .on("mouseenter", entered)
+        .on("mouseleave", left);
+
+    const dot = svg.append("g")// construction d'un conteneur
+        .attr("display", "none");
+    
+    // création du panneau qui s'affichera au-dessus des courbes
+    dot.append("polyline") // construction du panneau vide --> on utilise polyline plutôt que de fusionner un rectangle et un triangle
+        .attr("points","0,0 0,144 432,144, 432,0 0,0") // dimensions du panneau
+        .attr("id", "polyLineTracks")
+        .style("fill", "#fafafa")
+        .style("stroke"," #5dade2 ")
+        .style("opacity","0.8") // légère transparence
+        .style("stroke-width","1")
+        .attr("transform", "translate(-215, -170)"); // translation du panneau
+
+    // création du cercle noir sous le panneau qui indique le point précis où l'on se situe
+    dot.append("circle")
+        .attr("r", 6.5);
+
+    // texte pour les noms de lieux
+    dot.append("text")
+        .attr("font-weight", "bold")
+        .attr("font-size", 18)
+        .attr("text-anchor", "middle")
+        .attr("id", "dot-name") //  on donne un identifiant à ce texte
+        .attr("dx", "0")
+        .attr("dy", "-130")
+        .attr("class", "trackText")
+    
+    // création d'une puce (rond bleu dans le panneau)      
+    dot.append("text")
+        .attr("font-size", 20)
+        .style("fill", "#FF0000")
+        .attr("dx", "-200")
+        .attr("dy", "-90")
+        .attr("class", "trackText")
+        .text("●");
+    
+    // création du texte pour les dates
+    dot.append("text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 16)
+        .attr("dx", "-180")
+        .attr("dy", "-90")
+        .attr("class", "trackText")
+        .attr("id", "dot-date"); // identifiant date
+
+    // création de la deuxième puce
+    dot.append("text")
+        .attr("font-size", 20)
+        .style("fill", "#FF0000")
+        .attr("dx", "-200")
+        .attr("dy", "-50")
+        .attr("class", "trackText")
+        .text("●");
+    
+    // texte pour les taux de chômage
+    dot.append("text")
+          .attr("font-size", 16)
+          .attr("dx", "-180")
+          .attr("dy", "-50")
+          .attr("class", "trackText")
+          .attr("id", "dot-values") // identifiant
+
+    // -------------------------------------------
+
+    // création d'une puce (rond bleu dans le panneau)      
+    dot.append("text")
+        .attr("font-size", 20)
+        .style("fill", "#FF0000")
+        .attr("dx", "20")
+        .attr("dy", "-90")
+        .attr("class", "trackText")
+        .text("●");
+    
+    // création du texte pour les dates
+    dot.append("text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 16)
+        .attr("dx", "40")
+        .attr("dy", "-90")
+        .attr("class", "trackText")
+        .attr("id", "dot-datee"); // identifiant date
+
+    // création d'une puce (rond bleu dans le panneau)      
+    dot.append("text")
+        .attr("font-size", 20)
+        .style("fill", "#FF0000")
+        .attr("dx", "20")
+        .attr("dy", "-50")
+        .attr("class", "trackText")
+        .text("●");
+    
+    // création du texte pour les dates
+    dot.append("text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 16)
+        .attr("dx", "40")
+        .attr("dy", "-50")
+        .attr("class", "trackText")
+        .attr("id", "dot-listen"); // identifiant date
+
+    
+  // associe l'affichage du panneau et la transparence des courbes non sélectionnées aux actions de la souris    
+    function moved(event) {
+      event.preventDefault(); // change les valeurs par défaut affectées aux actions (clics, mouvement de la souris...)
+      const pointer = d3.pointer(event, this); // on construit un pointeur (tableau des coordonnées pour l'évènement this)
+
+
+      const xm = window.global.tracksX.invert(pointer[0]); // retourne le range associé à la coordonnée en x
+      const ym = window.global.tracksY.invert(pointer[1]); // retourne le range associé à la coordonné en y
+      const i = d3.bisectCenter(window.global.tracksData.dates, xm); // index de la valeur de la date la plus proche de xm
+      const s = d3.least(window.global.tracksData.series.slice(0,201), d => Math.abs(d.values[i] - ym)); // retourne les taux de chômage tels que la distance entre ym et ces taux à la date xm soit minimale
+      const dateFormat = d3.timeFormat("%d/%m/%Y"); // on change le format des dates pour un plus joli affichage
+      path.attr("stroke", d => {
+          return d === s ? window.global.trackColorScale(s.mean) : "#ddd"
+        })
+        .filter(d => d === s).raise(); // trace une ligne avec les valeurs précédentes, raise() sert à faire passer cette ligne au premier plan
+      
+        
+
+      dot.attr("transform", () => {
+        var a = window.global.tracksX(window.global.tracksData.dates[i])
+        var b = window.global.tracksY(s.values[i])
+
+
+        if(pointer[1] - 170 <= 0){
+          dot.select("#polyLineTracks")
+              .attr("transform", "translate(-215, 30)");
+          d3.selectAll(".trackText")
+            .attr("transform", "translate(0, 200)");
+        } else {
+          dot.select("#polyLineTracks")
+              .attr("transform", "translate(-215, -170)");
+          d3.selectAll(".trackText")
+            .attr("transform", "translate(0, 0)");
+        }
+
+        return `translate(${a},${b})`
+      }); // translation
+
+      var t = window.global.fullTracks.get(s.trackId)[0]
+      var al = window.global.fullAlbums.get(t.album)[0].name
+      var ar = window.global.fullArtists.get(t.artists[0])[0].name
+      t = t.name
+
+      var count = 25;
+
+      dot.select("#dot-name")
+        .text(t); 
+      
+      d3.select('#dot-date')
+        .text(() => {
+          var tt = "Artist :  " + ar
+          return tt.slice(0, count) + (tt.length > count ? "..." : "");
+        }); 
+      
+      d3.select('#dot-values')
+          .text(() => {
+            var tt = "Album :  "+ al
+            return tt.slice(0, count) + (tt.length > count ? "..." : "");
+          }); 
+
+      d3.select('#dot-listen')
+          .text(() => {
+            var tt = dateFormat(window.global.tracksData.dates[i])
+            return tt.slice(0, count) + (tt.length > count ? "..." : "");
+          }); 
+
+      d3.select('#dot-datee')
+          .text(() => {
+            var tt = ""+s.values[i].toFixed(2)+" minute(s)"
+            return tt.slice(0, count) + (tt.length > count ? "..." : "");
+          }); 
+      
+    }
+    
+    
+  // définit ce qu'il se passe à l'entrée de la souris dans le graphe
+    function entered() {
+      path.style("mix-blend-mode", null).attr("stroke", "#ddd");
+      dot.attr("display", null); // aucun affichage
+    }
+
+  // définit ce qu'il se passe à la sortie de la souris dans le graphe
+    function left() {
+      path.style("mix-blend-mode", "multiply").attr("stroke", (d,a,b) => {
+        
+        return window.global.trackColorScale(d.mean)
+      });
+      dot.attr("display", "none"); // aucun affichage
+    }
+  }
 
   function artistsDetails() {
 
@@ -903,7 +1133,8 @@
     artistsDetails();
     topArtistsViz()
     genresViz()
-    brush()
+    tracks()
+    //brush()
   }
 
   function movingAverage(arr, interval) {
@@ -920,5 +1151,4 @@
 
     return results;
   }
-
 </script>
