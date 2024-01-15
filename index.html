@@ -118,6 +118,9 @@
         <div id="songs" class="col bg-light overflow-auto rounded m-1"></div>
         -->
 
+        <h4>Couleur du son selon la moyenne d'écoute</h4>
+        <div id="trackLegend" class="row bg-light overflow-auto text-center">
+        </div>
         <div
           id="songs-details"
           class="bg-light overflow-auto rounded m-1"
@@ -126,7 +129,6 @@
 
       <div class="row my-5">
         <div class="row bg-light overflow-auto rounded m-1 py-2 text-center">
-          <h2>Les sons</h2>
         </div>
 
         <div  class="col bg-light overflow-auto rounded m-1"></div>
@@ -139,7 +141,7 @@
   </div>
   <footer class="bg-info text-center text-lg-start fixed-bottom">
   <div class="container fixed-bottom bg-body">
-    <div id="brush" class="row bg-light overflow-auto rounded"></div>
+    <div id="brush" class="row bg-light overflow-auto rounded m-1"></div>
   </div>
   </footer>
 </body>
@@ -223,6 +225,7 @@
   });
 
   function tracks() {
+    document.getElementById("trackLegend").innerHTML = "";
     var h = window.global.historyFiltered
 
     const format = d3.utcFormat("%d-%m-%Y");
@@ -357,7 +360,6 @@
 
     console.log("data", data)
 
-    
     window.global.trackColorScale = d3.scaleSequential().domain([d3.max(data.series, x => x.mean),d3.min(data.series, x => x.mean)])
       .interpolator(d3.interpolateSpectral);
     
@@ -374,6 +376,59 @@
                     .attr("d", d => line(d.values)); // trace la valeur du taux de chômage (values) associée à un lieu (y) à la date i (x)
 
     svg.call(hoverTracks, path); // on passe path en argument pour la fonction hover
+
+    const legendSvg = d3.select("#trackLegend").append("svg");
+    var dif = window.global.trackColorScale.domain()[1] - window.global.trackColorScale.domain()[0];
+      var intervals = d3.range(20).map(function(d,i) {
+          return dif * i / 20 + window.global.trackColorScale.domain()[0]
+      }) 
+      intervals.push(window.global.trackColorScale.domain()[1]);
+      intervals.sort((a,b) => a-b)
+
+    //Append a defs (for definition) element to your SVG
+    var defs = legendSvg.append("defs");
+
+    //Append a linearGradient element to the defs and give it a unique id
+    var linearGradient = defs.append("linearGradient")
+        .attr("id", "linear-gradient");
+    //Horizontal gradient
+    linearGradient
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "0%");
+    //Set the color + round interval
+    intervals.forEach(function(d, i) {
+      linearGradient.append("stop")
+        .attr("offset", (i / (intervals.length - 1)) * 100 + "%")
+        .attr("stop-color", window.global.trackColorScale(d));
+    })
+
+    intervals = intervals.map(function(element) {
+      return Math.round(element * 100) / 100;
+    });
+    var legend = [intervals[0], intervals[Math.floor(intervals.length / 2)], intervals[intervals.length-1]]
+    var legendWidth = 500;
+    var legendHeight = 30;
+    //Draw the rectangle and fill with gradient
+    legendSvg.append("rect")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+        .style("fill", "url(#linear-gradient)");
+
+    legendSvg.selectAll("text")
+    .data(legend)
+    .enter()
+    .append("text")
+    .text(function(d) {
+      return d;
+    })
+    .attr("x", function(d, i) {
+      return i * (legendWidth/2);
+    })
+    .attr("y", function(d) {
+      return legendHeight + 15;
+    });
   }
 
   function hoverTracks(svg, path) {
