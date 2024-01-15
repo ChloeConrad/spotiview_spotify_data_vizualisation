@@ -118,8 +118,8 @@
         <div id="songs" class="col bg-light overflow-auto rounded m-1"></div>
         -->
 
-        <h4>Couleur du son selon la moyenne d'écoute</h4>
-        <div id="trackLegend" class="row bg-light overflow-auto text-center">
+        <h4 class="row bg-light overflow-auto rounded m-1 py-2 text-center">Couleur du son selon la moyenne d'écoute</h4>
+        <div id="trackLegend" class="row bg-light overflow-auto rounded m-1 text-center">
         </div>
         <div
           id="songs-details"
@@ -140,8 +140,9 @@
     </div>
   </div>
   <footer class="bg-info text-center text-lg-start fixed-bottom">
-  <div class="container fixed-bottom bg-body">
-    <div id="brush" class="row bg-light overflow-auto rounded m-1"></div>
+  <div class="container fixed-bottom bg-body border border-dark">
+    <div class="text-center ">Filtrer les visualisations temporellement</div>
+    <div id="brush" class="row bg-light overflow-auto rounded"></div>
   </div>
   </footer>
 </body>
@@ -377,7 +378,9 @@
 
     svg.call(hoverTracks, path); // on passe path en argument pour la fonction hover
 
-    const legendSvg = d3.select("#trackLegend").append("svg");
+    const legendSvg = d3.select("#trackLegend").append("svg")
+        .attr("width", 600)
+        .attr("height", 50);
     var dif = window.global.trackColorScale.domain()[1] - window.global.trackColorScale.domain()[0];
       var intervals = d3.range(20).map(function(d,i) {
           return dif * i / 20 + window.global.trackColorScale.domain()[0]
@@ -386,7 +389,7 @@
       intervals.sort((a,b) => a-b)
 
     //Append a defs (for definition) element to your SVG
-    var defs = legendSvg.append("defs");
+    var defs = legendSvg.append("defs")
 
     //Append a linearGradient element to the defs and give it a unique id
     var linearGradient = defs.append("linearGradient")
