@@ -91,7 +91,7 @@ function genresViz() {
 
     var dataGenres = getGenres(artistsList)
 
-    var filteredGenres = filterMostListen(dataGenres,0.5)
+    var filteredGenres = filterMostListen(dataGenres,0.25)
     plotHist(filteredGenres,"genres",artistsList); 
 
 }
@@ -104,7 +104,7 @@ function plotHist(dataGenres,divName,artists){
             .domain([d3.min(Object.entries(dataGenres), d => +d[1]), d3.max(Object.entries(dataGenres), d => +d[1])])
             .range([h/10, h]);
 
-    const barWidth = 5
+    const barWidth = 6
     const barSpacing = 1
     const svg = d3.select("#"+divName)
               .append("svg")
@@ -117,7 +117,7 @@ function plotHist(dataGenres,divName,artists){
             .append("g");
 
     bars.append("rect")
-            .attr("x", (d, i) => i * (barWidth + barSpacing))
+            .attr("x", (d, i) => i * (barWidth + barSpacing*2))
             .attr("y", (d, i) => (h -  yScale(d[1]))/2)
             .attr("width", barWidth)
             .attr("height", (d, i) => (yScale(d[1])))
