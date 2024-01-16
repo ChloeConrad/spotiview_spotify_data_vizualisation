@@ -71,11 +71,11 @@ function artistsDetails() {
       },
     ];
 
-    /*
-        artistsList.sort(function(x, y){
-            return d3.descending(x.totalTs, y.totalTs);
-        })
-        */
+    
+    artistData.sort(function(x, y){
+      return d3.descending(x.totalTs, y.totalTs);
+    })
+        
     var text = "";
 
     var width = 400;
@@ -249,11 +249,11 @@ function artistsSelector() {
       },
     ];
 
-    /*
-        artistsList.sort(function(x, y){
-            return d3.descending(x.totalTs, y.totalTs);
-        })
-        */
+    
+    artistsList.sort(function(x, y){
+        return d3.descending(x.totalTs, y.totalTs);
+    })
+        
     var text = "";
 
     var width = 400;

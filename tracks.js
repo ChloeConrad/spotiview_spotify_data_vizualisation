@@ -59,7 +59,7 @@ function tracks() {
       return d3.descending(x.mean, y.mean);
     })
 
-    sortedH = sortedH.slice(0,200).map(d => d.trackId)
+    sortedH = sortedH.slice(0,50).map(d => d.trackId)
     
 
     h = h.filter( x => sortedH.includes(x.trackId))
@@ -135,7 +135,7 @@ function tracks() {
     console.log("data", data)
 
     window.global.trackColorScale = d3.scaleSequential().domain([d3.max(data.series, x => x.mean),d3.min(data.series, x => x.mean)])
-      .interpolator(d3.interpolateSpectral);
+      .interpolator(d3.interpolateRgb(d3.rgb(29, 185, 84), d3.rgb(199, 243,215)));
     
 
     const path = svg.append("g")
