@@ -250,75 +250,67 @@ function tracks() {
     // création d'une puce (rond bleu dans le panneau)      
     dot.append("text")
         .attr("font-size", 20)
-        .style("fill", "#FF0000")
+        .style("fill", "#1DB954")
         .attr("dx", "-200")
         .attr("dy", "-90")
         .attr("class", "trackText")
         .text("●");
     
-    // création du texte pour les dates
     dot.append("text")
         .attr("font-family", "sans-serif")
         .attr("font-size", 16)
         .attr("dx", "-180")
         .attr("dy", "-90")
         .attr("class", "trackText")
-        .attr("id", "dot-date"); // identifiant date
+        .attr("id", "dot-date"); 
 
-    // création de la deuxième puce
     dot.append("text")
         .attr("font-size", 20)
-        .style("fill", "#FF0000")
+        .style("fill", "#1DB954")
         .attr("dx", "-200")
         .attr("dy", "-50")
         .attr("class", "trackText")
         .text("●");
     
-    // texte pour les taux de chômage
     dot.append("text")
           .attr("font-size", 16)
           .attr("dx", "-180")
           .attr("dy", "-50")
           .attr("class", "trackText")
-          .attr("id", "dot-values") // identifiant
+          .attr("id", "dot-values") 
 
-    // -------------------------------------------
 
-    // création d'une puce (rond bleu dans le panneau)      
     dot.append("text")
         .attr("font-size", 20)
-        .style("fill", "#FF0000")
+        .style("fill", "#1DB954")
         .attr("dx", "20")
         .attr("dy", "-90")
         .attr("class", "trackText")
         .text("●");
     
-    // création du texte pour les dates
     dot.append("text")
         .attr("font-family", "sans-serif")
         .attr("font-size", 16)
         .attr("dx", "40")
         .attr("dy", "-90")
         .attr("class", "trackText")
-        .attr("id", "dot-datee"); // identifiant date
+        .attr("id", "dot-datee"); 
 
-    // création d'une puce (rond bleu dans le panneau)      
     dot.append("text")
         .attr("font-size", 20)
-        .style("fill", "#FF0000")
+        .style("fill", "#1DB954")
         .attr("dx", "20")
         .attr("dy", "-50")
         .attr("class", "trackText")
         .text("●");
     
-    // création du texte pour les dates
     dot.append("text")
         .attr("font-family", "sans-serif")
         .attr("font-size", 16)
         .attr("dx", "40")
         .attr("dy", "-50")
         .attr("class", "trackText")
-        .attr("id", "dot-listen"); // identifiant date
+        .attr("id", "dot-listen");
 
     function timeToString(time) {
       if(time>60){
