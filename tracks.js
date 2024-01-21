@@ -320,7 +320,13 @@ function tracks() {
         .attr("class", "trackText")
         .attr("id", "dot-listen"); // identifiant date
 
-    
+    function timeToString(time) {
+      if(time>60){
+        return (time/60).toFixed(2).toString() + " heure(s)";
+
+      }
+      return parseInt(time).toString()+" minute(s)";
+    }
   // associe l'affichage du panneau et la transparence des courbes non sélectionnées aux actions de la souris    
     function moved(event) {
       event.preventDefault(); // change les valeurs par défaut affectées aux actions (clics, mouvement de la souris...)
@@ -389,7 +395,8 @@ function tracks() {
 
       d3.select('#dot-datee')
           .text(() => {
-            var tt = ""+s.values[i].toFixed(2)+" minute(s)"
+            //var tt = ""+s.values[i].toFixed(2)+" minute(s)"
+            var tt = ""+timeToString(s.values[i]) 
             return tt.slice(0, count) + (tt.length > count ? "..." : "");
           }); 
       

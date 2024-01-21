@@ -139,7 +139,7 @@ function artistsDetails() {
 
         g.append("text")
           .attr("class", "value-text")
-          .text(data.value.toFixed(4) + "%")
+          .text(data.value.toFixed(2) + "%")
           .attr("text-anchor", "middle")
           .attr("dy", ".6em");
       })

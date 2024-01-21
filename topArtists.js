@@ -84,7 +84,15 @@ function topArtistsViz() {
         .attr("x", 50)
         .attr("y", (d, i) => i * 100 + 10);
 
-
+    function followersValueToString(val) {
+        
+        if (parseInt(val)> 1000000){
+            return (val/1000000).toFixed(1).toString()+"M";
+        }
+        else {
+            return (val/1000).toFixed(1)+"K"
+        }
+    }
 
     var top_texts = top_svg.selectAll("text")
         .data(topFiveArtists)
@@ -116,14 +124,15 @@ function topArtistsViz() {
         });
 
         top_texts.append("text")
-        .text((d) => "Temps d'écoute : "+(d.totalTs / 3600000).toFixed(2)+"h")
+        .text((d) => "Temps d'écoute : "+parseInt(d.totalTs / 3600000) + " h")
         .attr("x", 350)
         .attr("y", function(_, i) {
             return i * 100 + 40;
         });
 
         top_texts.append("text")
-        .text((d) => "Followers : "+d.artist.followers.total)
+        .text((d) => "Followers : "+followersValueToString(d.artist.followers.total))
+       
         .attr("x", 350)
         .attr("y", function(_, i) {
             return i * 100 + 60;
@@ -175,14 +184,14 @@ function topArtistsViz() {
         });
 
         bottom_texts.append("text")
-        .text((d) => "Temps d'écoute : "+(d.totalTs / 3600000).toFixed(2)+"h")
+        .text((d) => "Temps d'écoute : "+parseInt(d.totalTs / 3600000)+" h")
         .attr("x", 350)
         .attr("y", function(_, i) {
             return i * 100 + 40;
         });
 
         bottom_texts.append("text")
-        .text((d) => "Followers : "+d.artist.followers.total)
+        .text((d) => "Followers : "+followersValueToString(d.artist.followers.total))
         .attr("x", 350)
         .attr("y", function(_, i) {
             return i * 100 + 60;

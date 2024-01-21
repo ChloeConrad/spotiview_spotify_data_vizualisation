@@ -97,12 +97,22 @@ function genresViz() {
 }
 
 function plotHist(dataGenres,divName,artists){
+    const MARGIN_LEFT = 30
+
     document.getElementById(divName).innerHTML = "";
-    const w = Object.keys(dataGenres).length*7;
+    const w = Object.keys(dataGenres).length*7+MARGIN_LEFT;
     const h = 250;
     const yScale = d3.scaleLog()
             .domain([d3.min(Object.entries(dataGenres), d => +d[1]), d3.max(Object.entries(dataGenres), d => +d[1])])
             .range([h/10, h]);
+    
+    const axeScaleUp = d3.scaleLog()
+            .domain([d3.min(Object.entries(dataGenres), d => +d[1])/3600000, d3.max(Object.entries(dataGenres), d => +d[1])/3600000])
+            .range([h, h/2]);
+
+    const axeScaleDown = d3.scaleLog()
+            .domain([d3.min(Object.entries(dataGenres), d => +d[1])/3600000, d3.max(Object.entries(dataGenres), d => +d[1])/3600000])
+            .range([h/2, h]);
 
     const barWidth = 6
     const barSpacing = 1
@@ -117,7 +127,7 @@ function plotHist(dataGenres,divName,artists){
             .append("g");
 
     bars.append("rect")
-            .attr("x", (d, i) => i * (barWidth + barSpacing*2))
+            .attr("x", (d, i) => i * (barWidth + barSpacing*2)+MARGIN_LEFT)
             .attr("y", (d, i) => (h -  yScale(d[1]))/2)
             .attr("width", barWidth)
             .attr("height", (d, i) => (yScale(d[1])))
@@ -126,10 +136,11 @@ function plotHist(dataGenres,divName,artists){
 
     d3.selectAll(".elemHistGenre")
             .on('mouseover', function (d, i) {
+                console.log(i)
                 var topArtists = getTopArtistsByGenre(i[0],artists)
                 var maDiv = document.getElementById("genres-details");
                 maDiv.innerHTML = "<strong> Genre : </strong> <br>" + i[0];
-                maDiv.innerHTML += "<br><br> <strong> Heure d'écoutes : </strong> <br>" + (i[1] / 3600000).toFixed(2)+"h"
+                maDiv.innerHTML += "<br><br> <strong> Heure d'écoutes : </strong> <br>" + parseInt(i[1] / 3600000)+"h"
                 maDiv.innerHTML += "<br><br> <strong> Top 3 artistes : </strong><ul>";
                 d3.selectAll(".elemHistGenre").style("filter", "contrast(30%)");
                 d3.select(this).style("filter", "contrast(120%)");
@@ -144,6 +155,18 @@ function plotHist(dataGenres,divName,artists){
                 var maDiv = document.getElementById("genres-details");
                 maDiv.innerHTML = "";
                 d3.selectAll(".elemHistGenre").style("filter", "contrast(100%)");
+            });   
 
-  });          
+    const axisYUp = d3.axisLeft().scale(axeScaleUp)
+    // créer un nouveau groupe et y attacher l'axe
+    svg.append('g')
+    .attr('transform', `translate(${MARGIN_LEFT - 3} -125)`)
+    .call(axisYUp)
+
+    const axisYDown = d3.axisLeft().scale(axeScaleDown)
+    // créer un nouveau groupe et y attacher l'axe
+    svg.append('g')
+    .attr('transform', `translate(${MARGIN_LEFT - 3})`)
+    .call(axisYDown)
+         
 }
