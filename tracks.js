@@ -341,13 +341,38 @@ function tracks() {
         var a = window.global.tracksX(window.global.tracksData.dates[i])
         var b = window.global.tracksY(s.values[i])
 
-
-        if(pointer[1] - 170 <= 0){
+        // console.log(pointer[0])
+        if(pointer[1] - 170 <= 0 && pointer[0] <= 220){
           dot.select("#polyLineTracks")
-              .attr("transform", "translate(-215, 30)");
+              .attr("transform", "translate(-45, 30)");
           d3.selectAll(".trackText")
-            .attr("transform", "translate(0, 200)");
-        } else {
+            .attr("transform", "translate(170, 200)");
+        }
+        else if(pointer[1] - 170 <= 0 && pointer[0] > 600){
+          dot.select("#polyLineTracks")
+              .attr("transform", "translate(-415, 30)");
+          d3.selectAll(".trackText")
+            .attr("transform", "translate(-200, 200)");
+        }
+        else if(pointer[1] - 170 <= 0 && pointer[0] > 220 && pointer[0] <=600){
+          dot.select("#polyLineTracks")
+          .attr("transform", "translate(-215, 30)");
+          d3.selectAll(".trackText")
+          .attr("transform", "translate(0, 200)");
+        }
+        else if(pointer[0] <= 220) {
+          dot.select("#polyLineTracks")
+              .attr("transform", "translate(30, -100)");
+          d3.selectAll(".trackText")
+            .attr("transform", "translate(245, 70)");
+        } 
+        else if(pointer[0] > 600) {
+          dot.select("#polyLineTracks")
+              .attr("transform", "translate(-450, -100)");
+          d3.selectAll(".trackText")
+            .attr("transform", "translate(-245, 70)");
+        }
+        else {
           dot.select("#polyLineTracks")
               .attr("transform", "translate(-215, -170)");
           d3.selectAll(".trackText")
