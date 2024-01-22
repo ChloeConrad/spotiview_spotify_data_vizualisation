@@ -314,10 +314,10 @@ function tracks() {
 
     function timeToString(time) {
       if(time>60){
-        return (time/60).toFixed(2).toString() + " heure(s)";
+        return Math.floor(time/60).toString() + " heure(s) " + Math.floor(time%60).toString() + " minutes";
 
       }
-      return parseInt(time).toString()+" minute(s)";
+      return parseInt(time).toString()+" minutes";
     }
   // associe l'affichage du panneau et la transparence des courbes non sélectionnées aux actions de la souris    
     function moved(event) {
