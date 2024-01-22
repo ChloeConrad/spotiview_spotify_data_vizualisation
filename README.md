@@ -6,5 +6,5 @@ Spotiview est un outil de visualisation de données Spotify. Il permet à un uti
 ## English description
 Spotiview is a Spotify data visualisation tool. A user who shared is data can learn more about their favorite genres, artists and tracks. 
 
-## Image
+## Aperçu du projet
 ![alt text](https://github.com/ChloeConrad/spotiview_spotify_data_vizualisation/blob/main/spotiview.png?raw=true)
