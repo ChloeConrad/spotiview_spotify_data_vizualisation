@@ -124,7 +124,13 @@ function topArtistsViz() {
         });
 
         top_texts.append("text")
-        .text((d) => "Temps d'écoute : "+parseInt(d.totalTs / 3600000) + " h")
+        .text((d) => {
+            if (d.totalTs < 3600000) {
+                return "Temps d'écoute : " + parseInt(d.totalTs / 60000) + " minutes";
+            } else {
+                return "Temps d'écoute : " + parseInt(d.totalTs / 3600000) + " h";
+            }
+        })
         .attr("x", 350)
         .attr("y", function(_, i) {
             return i * 100 + 40;
@@ -184,7 +190,13 @@ function topArtistsViz() {
         });
 
         bottom_texts.append("text")
-        .text((d) => "Temps d'écoute : "+parseInt(d.totalTs / 3600000)+" h")
+        .text((d) => {
+            if (d.totalTs < 3600000) {
+                return "Temps d'écoute : " + parseInt(d.totalTs / 60000) + " minutes";
+            } else {
+                return "Temps d'écoute : " + parseInt(d.totalTs / 3600000) + " h";
+            }
+        })
         .attr("x", 350)
         .attr("y", function(_, i) {
             return i * 100 + 40;
