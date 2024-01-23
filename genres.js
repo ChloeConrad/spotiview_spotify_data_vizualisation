@@ -136,7 +136,6 @@ function plotHist(dataGenres,divName,artists){
 
     d3.selectAll(".elemHistGenre")
             .on('mouseover', function (d, i) {
-                console.log(i)
                 var topArtists = getTopArtistsByGenre(i[0],artists)
                 var maDiv = document.getElementById("genres-details");
                 maDiv.innerHTML = "<strong> Genre : </strong> <br>" + i[0];
